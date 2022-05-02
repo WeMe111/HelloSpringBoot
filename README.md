@@ -51,7 +51,7 @@ public class User {
 	private Long id;  
 	
 	@Column(nullable = false)
-	private String userId;
+	private String username;
 	
 	@Column(nullable = false)
 	private String password;
@@ -94,3 +94,39 @@ public enum Role {
 }
 ```
 스프링 시큐리티에서는 권한 코드에 항상 ROLE_이 앞에 있어야 합니다. 따라서 키 값을 ROLE_USER, ROLE_ADMIN로 지정했습니다.  
+
+# Security 설정
+**SecurityConfig**  
+```
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+	
+	@Bean
+	public BCryptPasswordEncoder encoderpwd() {
+		return new BCryptPasswordEncoder();
+	}
+	
+	@Override
+	public void configure(HttpSecurity http) throws Exception{
+		http.csrf().disable();
+		http.authorizeRequests()
+			.antMatchers("/index").authenticated()
+			.antMatchers("/user/home").access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+			.antMatchers("/admin/userList").access("hasRole('ROLE_ADMIN')")
+			.anyRequest().permitAll()
+			.and()  
+			.formLogin()
+			.loginPage("/login")
+			.loginProcessingUrl("/login") 
+			.defaultSuccessUrl("/user/home");
+	}
+
+}
+```  
+**@EnableWebSecurity**: 스프링 시큐리티 설정들을 활성화시킵니다.  
+**@Configuration**: 설정파일을 만들기 위한 애노테이션 or Bean을 등록하기 위한 애노테이션  
+**csrf()** : 공격을 방지하는 기능을 지원  
+**authorizeRequests()** : URL별 권환 관리를 설정하는 옵션  
+
