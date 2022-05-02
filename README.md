@@ -129,4 +129,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 **@Configuration**: 설정파일을 만들기 위한 애노테이션 or Bean을 등록하기 위한 애노테이션  
 **csrf()** : 공격을 방지하는 기능을 지원  
 **authorizeRequests()** : URL별 권환 관리를 설정하는 옵션  
+**antMatchers()** : 권한 관리 대상을 지정하는 옵션  
+**authenticated()** : 메소드는 애플리케이션에 로그인된 사용자가 요청을 수행할 떄 필요하다. 만약 사용자가 인증되지 않았다면, 스프링 시큐리티 필터는 요청을 잡아내고 사용자를 로그인 페이지로 리다이렉션 해준다.  
+**permitAll()** : 메소드는 어떠한 보안 요구 없이 요청을 허용해준다.  
+**formLogin()** : 권한이 없는 사람이 페이지를 이동하려고 하면 로그인 페이지로 이동  
+**loginPage()** : 해당하는 로그인 페이지 URL로 이동  
+**loginProcessingUrl()** : 스프링 시큐리티가 해당 주소로 요청오는 로그인을 가로채서 대신 로그인해줍니다. (loginProcessingUrl는 잠시 주석처리해놓겠습니다. 지금 당장 사용하지 않을 겁니다.)  
+**defaultSuccessUrl()** : 로그인이 성공하면 해당 URL로 이동  
+
 
