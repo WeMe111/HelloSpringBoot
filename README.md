@@ -384,3 +384,8 @@ th:each 문법을 사용하여 회원정보를 출력
 	}
 ```
 JpaRepository에 기본으로 재공하는 findAll() 사용하여 회원 정보를 가져옴.
+
+
+# 프로젝트 진행과정에서 궁금했던 점
+**[JPA] 요청 응답시 Entity 대신 DTO를 사용해야하는 이유**
+[참고](https://tecoble.techcourse.co.kr/post/2020-08-31-dto-vs-entity/)  
