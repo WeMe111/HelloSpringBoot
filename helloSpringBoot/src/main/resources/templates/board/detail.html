@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/header :: header" />
+<body>
+	<div class="container">
+		<div th:replace="layout/bodyHeader2 :: bodyHeader" />
+		<form method="post">
+		<div class="form-group">
+				<label for="writer">작성자</label> 
+				<input type="text" name="writer" id="writer" class="form-control" th:value="${board.writer}" disabled="disabled" >
+			</div>
+			<div class="form-group">
+				<label for="title">제목</label> 
+				<input type="text" name="title" id="title" class="form-control" th:value="${board.title}" disabled="disabled">
+			</div>
+			<div class="form-group">
+				<label for="content">내용</label> 
+				<input type="text" name="content" id="content" class="form-control" th:value="${board.content}" disabled="disabled">
+			</div>
+			<a th:href="@{/board/update/{idb}(idb=${board.idb})}" class="btn btn-primary" id="update">수정</a>
+			<a th:href="@{/board/delete/{idb}(idb=${board.idb})}" class="btn btn-primary" id="delete">삭제</a>
+		</form>
+		<br />
+		<div th:replace="layout/footer :: footer" />
+	</div>
+</body>
+</html>

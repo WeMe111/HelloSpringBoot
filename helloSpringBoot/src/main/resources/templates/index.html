@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/header :: header">
+<title>HelloSpringBoot</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+	<div class="container">
+		<div th:replace="layout/bodyHeader :: bodyHeader" />
+		<div class="jumbotron">
+			<h1>HelloSpringBoot</h1>
+			<p class="lead">회원 기능</p>
+			<p>
+				<a class="btn btn-lg btn-secondary" href="/signup">회원 가입</a> 
+				<a class="btn btn-lg btn-secondary" href="/login">로그인</a>
+			</p>
+		</div>
+		<div th:replace="layout/footer :: footer" />
+	</div>
+</body>
+</html>
