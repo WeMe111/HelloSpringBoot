@@ -1,10 +1,12 @@
 # 목차
 1.[프로젝트 생성](#프로젝트-생성)  
 2.[DB 설정](#DB-설정)  
-3.[User 테이블 생성](#User-테이블-생성)  
-4.[Security 회원가입](#Security-회원가입)  
-5.[Security 로그인](#Security-로그인)  
-6.[회원목록](#회원목록)
+3.[시큐리티를 이용한 회원가입, 로그인](#시큐리티를-이용한-회원가입,-로그인)  
+4.[회원목록](#회원목록) 
+5.[게시판 CRUD](#게시판-CRUD)  
+
+
+0.[프로젝트 진행과정에서 궁금했던 점](#프로젝트-진행과정에서-궁금했던-점)  
 
 # 프로젝트 생성
 ![프로젝트 생성1](https://user-images.githubusercontent.com/94879395/165679231-659fa912-256e-4feb-8445-a8ba387edee7.PNG)  
@@ -42,7 +44,8 @@ spring:
 **show-sql** : 프로젝트 실행 시 sql문을 로그로 보여줍니다.  
 **hibernate.format_sql** : sql을 포맷팅해서 좀 더 예쁘게 sql문을 로그로 보여줍니다.  
  
-# User 테이블 생성
+# 시큐리티를 이용한 회원가입, 로그인
+## User 테이블 생성
 **User**
 ```
 @Getter
@@ -83,7 +86,7 @@ public class User {
 User 클래스 Setter가 없는 이유는 이 setter를 무작정 생성하게 되면 해당 클래스의 인스턴스가 언제 어디서 변해야하는지 코드상으로는 명확하게 알 수가 없어 나중에는 변경시에 매우 복잡해집니다.  
 **Builder**를 사용하는 이유는 어느 필드에 어떤 값을 채워야하는지 명확하게 알 수 있기 때문에 실수가 나지 않습니다.    
 
-# Security 회원가입  
+## Security 회원가입  
 **signup.html**
 ```
 <!DOCTYPE HTML>
@@ -163,7 +166,7 @@ user.setPassword(encPassword); :** 암호화를 하기 위해서는 Spring-secur
 BCryptPasswordEncoder 클래스 객체를 생성하고 객체를 통해 encode() 메서드를 호출하여 비밀번호를 매개값으로 넣어준 뒤 인코딩합니다.  
 encode()메서드는 반환타입이 String이므로 String 타입의 변수에 저장합니다.  
 
-# Security 로그인  
+## Security 로그인  
 **SCRF 설정**  
 Cross-site request forgery의 약자로 타사이트에서 본인의 사이트로 form 데이터를 사용하여 공격하려고 할 때, 그걸 방지하기 위해 csrf 토큰 값을 사용하는 것이다.  
 타임리프 템플릿으로 form 생성시 타임리프, 스프링 MVC, 스프링 시큐리티가 조합이 되어 자동으로 csrf 토큰 기능을 지원해준다.
@@ -330,6 +333,7 @@ public class PrincipalDetalisService implements UserDetailsService {
 정확한 이유는 모르겠지만 username으로 고정으로 사용해야 겠다.. 다음 또 시큐리티를 사용하게 되면 다시 시도 해봐야겠다.  
 
 # 회원목록
+**UserList**  
 ```
 http.authorizeRequests()  //권한 
     .antMatchers("/admin/userList").access("hasRole('ROLE_ADMIN')");
@@ -384,6 +388,106 @@ th:each 문법을 사용하여 회원정보를 출력
 	}
 ```
 JpaRepository에 기본으로 재공하는 findAll() 사용하여 회원 정보를 가져옴.
+
+# 게시판 CRUD  
+## Board 테이블 생성
+```
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Board {
+	
+	@Id
+	@GeneratedValue
+	private Long idb;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "id")
+	private User user;
+	
+//	@OneToMany(mappedBy = "board")
+//	private List<Reply> comment = new ArrayList<>();
+	
+	@Column(nullable = false)
+	private String title;
+	
+	@Lob
+	private String content;
+	
+	@Column(nullable = false)
+	private String writer;
+	
+	@Column(columnDefinition = "integer default 0", nullable = false)
+	private int count;
+	
+	@CreationTimestamp
+	@Column(updatable = false)
+	private Timestamp createDate;
+	
+	@UpdateTimestamp
+	private Timestamp updateDate;
+	
+	@Builder
+	public Board(Long idb, String title, String content, String writer, User user) {
+		this.idb = idb;
+		this.writer = writer;
+		this.title = title;
+		this.content = content;
+		this.user = user;
+	}
+}
+```
+**@NoArgsConstructor(access = AccessLevel.PROTECTED):** Entity나 DTO를 사용할때 많이 사용하는 편입니다.  
+기본 생성자의 접근 제어를 PROTECTED로 설정해놓게 되면 무분별한 객체 생성에 대해 한번 더 체크할 수 있는 수단이 되기 때문입니다.
+[참조](https://cobbybb.tistory.com/14)  
+**@CreationTimestamp:** INSERT 쿼리가 발생할 때, 현재 시간을 값으로 채워서 쿼리를 생성한다. @InsertTimeStamp 어노테이션을 사용하면 데이터가 생성된 시점에 대한 관리하는 수고스러움을 덜 수 있다.
+[참조](https://velog.io/@koo8624/Spring-CreationTimestamp-UpdateTimestamp)  
+**@UpdateTimestamp:** UPDATE 쿼리가 발생할 때, 현재 시간을 값으로 채워서 쿼리를 생성한다. @UpdateTimestamp 어노테이션을 사용하면 수정이 발생할 때마다 마지막 수정시간을 업데이트 해주어야 하는 데이터에 유용하게 활용될 수 있다.  
+**@Builder:** [참조](https://mangkyu.tistory.com/163)  
+
+**BoardDto**
+```
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+public class BoardDto {
+
+	 	private Long idb;
+	    private String writer;
+	    private String title;
+	    private String content;
+	    private User user;
+	    private Timestamp createDate;
+	    private Timestamp updateDate;
+
+	    public Board toEntity(){
+	        Board boardEntity = Board.builder()
+	                .idb(idb)
+	                .writer(writer)
+	                .title(title)
+	                .content(content)
+	                .user(user)
+	                .build();
+	        return boardEntity;
+	    }
+
+	    @Builder
+	    public BoardDto(Long idb, String title, String content, String writer, User user, Timestamp createDate, Timestamp updateDate) {
+	        this.idb = idb;
+	        this.writer = writer;
+	        this.title = title;
+	        this.content = content;
+	        this.createDate = createDate;
+	        this.updateDate = updateDate;
+	        this.user = user;
+	    }
+}
+```
+
+## Repository, BoardService, BoardController
+**BoardRepository**  
+
 
 
 # 프로젝트 진행과정에서 궁금했던 점
