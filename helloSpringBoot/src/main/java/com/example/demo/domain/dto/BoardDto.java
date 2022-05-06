@@ -3,6 +3,7 @@ package com.example.demo.domain.dto;
 import java.security.Timestamp;
 
 import com.example.demo.domain.Board;
+import com.example.demo.domain.User;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -20,6 +21,7 @@ public class BoardDto {
 	    private String writer;
 	    private String title;
 	    private String content;
+	    private User user;
 	    private Timestamp createDate;
 	    private Timestamp updateDate;
 
@@ -29,17 +31,19 @@ public class BoardDto {
 	                .writer(writer)
 	                .title(title)
 	                .content(content)
+	                .user(user)
 	                .build();
 	        return boardEntity;
 	    }
 
 	    @Builder
-	    public BoardDto(Long idb, String title, String content, String writer, Timestamp createDate, Timestamp updateDate) {
+	    public BoardDto(Long idb, String title, String content, String writer, User user, Timestamp createDate, Timestamp updateDate) {
 	        this.idb = idb;
 	        this.writer = writer;
 	        this.title = title;
 	        this.content = content;
 	        this.createDate = createDate;
 	        this.updateDate = updateDate;
+	        this.user = user;
 	    }
 }

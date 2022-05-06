@@ -6,4 +6,5 @@ import com.example.demo.domain.Board;
 
 public interface BoardRepository extends JpaRepository<Board, Long> {
 
+
 }

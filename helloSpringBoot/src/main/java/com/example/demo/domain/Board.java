@@ -23,7 +23,6 @@ import lombok.Setter;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Board {
 	
@@ -47,7 +46,7 @@ public class Board {
 	@Column(nullable = false)
 	private String writer;
 	
-	@ColumnDefault("0")
+	@Column(columnDefinition = "integer default 0", nullable = false)
 	private int count;
 	
 	@CreationTimestamp
@@ -58,11 +57,12 @@ public class Board {
 	private Timestamp updateDate;
 	
 	@Builder
-	public Board(Long idb, String title, String content, String writer) {
+	public Board(Long idb, String title, String content, String writer, User user) {
 		this.idb = idb;
 		this.writer = writer;
 		this.title = title;
 		this.content = content;
+		this.user = user;
 	}
 
 }

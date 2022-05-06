@@ -20,7 +20,7 @@ public class BoardService {
 
 	private final BoardRepository boardRepository;
 	
-	public Long register(BoardDto boardDto) {
+	public Long savePost(BoardDto boardDto) {
 		return boardRepository.save(boardDto.toEntity()).getIdb();
 	}
 	
@@ -42,4 +42,10 @@ public class BoardService {
 		
 		return boardDto;
 	}
+	
+	@Transactional
+	public void deletePost(Long idb) {
+		boardRepository.deleteById(idb);
+	}
+	
 }
