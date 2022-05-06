@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import com.example.demo.domain.dto.BoardDto;
@@ -30,7 +31,14 @@ public class BoardController {
     @PostMapping("/board/register")
     public String registerPost(BoardDto boardDto) {
         boardService.register(boardDto);
-        return "redirect:/";
+        return "redirect:/user/home";
+    }
+    
+    @GetMapping("/board/detail/{idb}")
+    public String detail(@PathVariable("idb") Long idb, Model model) {
+    	BoardDto boardDto = boardService.getPost(idb);
+    	model.addAttribute("boardDto", boardDto);
+    	return "board/detail";
     }
 
 }

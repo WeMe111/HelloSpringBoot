@@ -20,7 +20,7 @@ public class BoardDto {
 	    private String writer;
 	    private String title;
 	    private String content;
-	    private Timestamp createdDate;
+	    private Timestamp createDate;
 	    private Timestamp updateDate;
 
 	    public Board toEntity(){
@@ -34,12 +34,12 @@ public class BoardDto {
 	    }
 
 	    @Builder
-	    public BoardDto(Long idb, String title, String content, String writer, Timestamp createdDate, Timestamp updateDate) {
+	    public BoardDto(Long idb, String title, String content, String writer, Timestamp createDate, Timestamp updateDate) {
 	        this.idb = idb;
 	        this.writer = writer;
 	        this.title = title;
 	        this.content = content;
-	        this.createdDate = createdDate;
+	        this.createDate = createDate;
 	        this.updateDate = updateDate;
 	    }
 }

@@ -1,6 +1,9 @@
 package com.example.demo.service;
 
 import java.util.List;
+import java.util.Optional;
+
+import javax.transaction.Transactional;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -25,4 +28,18 @@ public class BoardService {
 		return boardRepository.findAll(Sort.by(Sort.Direction.DESC, "idb"));
 	}
 	
+	@Transactional
+	public BoardDto getPost(Long idb) {
+		Optional<Board> boardWeapper = boardRepository.findById(idb);
+		Board board = boardWeapper.get();
+		
+		BoardDto boardDto = BoardDto.builder()
+				.idb(board.getIdb())
+				.title(board.getTitle())
+				.content(board.getContent())
+				.writer(board.getWriter())
+				.build();
+		
+		return boardDto;
+	}
 }
