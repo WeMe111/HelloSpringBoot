@@ -4,8 +4,9 @@
 <body>
 	<div class="container">
 		<div th:replace="layout/bodyHeader2 :: bodyHeader" />
-		<form action="/board/register" method="post">
+		<form method="post">
 		<div class="form-group">
+		<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 				<label for="writer">작성자</label> 
 				<input type="text" name="writer" id="writer" class="form-control" placeholder="이름을 입력하세요" >
 			</div>

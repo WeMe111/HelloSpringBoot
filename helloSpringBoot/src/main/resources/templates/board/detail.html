@@ -4,21 +4,21 @@
 <body>
 	<div class="container">
 		<div th:replace="layout/bodyHeader2 :: bodyHeader" />
-		<form method="post">
+		<form>
 		<div class="form-group">
 				<label for="writer">작성자</label> 
-				<input type="text" name="writer" id="writer" class="form-control" th:value="${board.writer}" disabled="disabled" >
+				<input type="text" name="writer" id="writer" class="form-control" th:value="${boardDto.writer}" disabled="disabled" >
 			</div>
 			<div class="form-group">
 				<label for="title">제목</label> 
-				<input type="text" name="title" id="title" class="form-control" th:value="${board.title}" disabled="disabled">
+				<input type="text" name="title" id="title" class="form-control" th:value="${boardDto.title}" disabled="disabled">
 			</div>
 			<div class="form-group">
 				<label for="content">내용</label> 
-				<input type="text" name="content" id="content" class="form-control" th:value="${board.content}" disabled="disabled">
+				<input type="text" name="content" id="content" class="form-control" th:value="${boardDto.content}" disabled="disabled">
 			</div>
-			<a th:href="@{/board/update/{idb}(idb=${board.idb})}" class="btn btn-primary" id="update">수정</a>
-			<a th:href="@{/board/delete/{idb}(idb=${board.idb})}" class="btn btn-primary" id="delete">삭제</a>
+			<a th:href="@{/board/update/{boardDto.idb}}" class="btn btn-primary" id="update">수정</a>
+			<a th:href="@{/board/delete/{board.idb}}" class="btn btn-primary" id="delete">삭제</a>
 		</form>
 		<br />
 		<div th:replace="layout/footer :: footer" />

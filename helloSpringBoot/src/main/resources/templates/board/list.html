@@ -18,9 +18,9 @@
 				<tbody>
 					<tr th:each="board : ${board}">
 						<td th:text="${board.idb}"></td>
-						<td th:text="${board.title}"></td>
+						<td><a th:href="@{'/board/detail/' + ${board.idb}}"><span th:text="${board.title}"></span></a></td>
 						<td th:text="${board.writer}"></td>
-						<td th:text="${#temporals.format(board.createAt, 'yyyy-MM-dd HH:mm')}"></td>
+						<td th:text="${board.createDate}"></td>
 						<td th:text="${board.count}"></td>
 					</tr>
 				</tbody>
