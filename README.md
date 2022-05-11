@@ -2,7 +2,7 @@
 1.[프로젝트 생성](#프로젝트-생성)  
 2.[DB 설정](#DB-설정)  
 3.[시큐리티를 이용한 회원가입, 로그인](#시큐리티를-이용한-회원가입,-로그인)  
-4.[회원목록](#회원목록) 
+4.[회원목록](#회원목록)  
 5.[게시판 CRUD](#게시판-CRUD)  
 
 
@@ -80,6 +80,7 @@ public class User {
 디폴트값으로 클래스의 카멜케이스 이름을 언더스코어 네이밍(_)으로 테이블 이름을 매칭합니다.  
 **@Id** : 테이블의 Primary Key(PK)  
 **@GeneratedValue(strategy = GenerationType.IDENTITY)** : PK를 자동으로 생성하고자 할 때 사용합니다. 즉, auto_increment를 말합니다. 여기서는 JPA의 넘버링 전략이 아닌 이 전략을 사용합니다. (전에 application.yml 설정에서 use-new-id-generate-mappings: false로 한 것이 있습니다.)  
+오라클, mysql등 사용법이 다르고 mysql,mariaDB는 IDENTITY를 사용 하고 Auto는 자동으로 db랑 비교해서 넣어준다.  
 **@Column** : 해당 필드가 컬럼이라는 것을 말하고, @Column에는 다양한 속성을 지정할 수 있습니다. (nullable = false: null값이 되면 안된다!, length = 50: 길이 제한 등등)
 **@Enumerated(EnumType.STRING)** : JPA로 DB에 저장할 때 Enum 값을 어떤 형태로 저장할지를 결정합니다.  
 기본적으로는 int로 저장하지만 int로 저장하면 무슨 의미인지 알 수가 없기 때문에 문자열로 저장될 수 있도록 설정합니다.  
@@ -485,8 +486,30 @@ public class BoardDto {
 }
 ```
 
-## Repository, BoardService, BoardController
+## BoarRepository, BoardService, BoardController
 **BoardRepository**  
+```
+public interface BoardRepository extends JpaRepository<Board, Long> {
+
+	@Modifying
+	@Query("update Board p set p.count = p.count + 1 where p.idb = ?1")
+	int updateCount(Long idb);
+	
+	//검색 조건 Like문 실행
+	Page<Board> findByTitleContainingOrContentContaining(String title, String content, Pageable pageable);
+	
+}
+```
+**JpaRepository**: JPA가 기본적으로 제공하는 메서드를 사용 할 수 있다.  
+**Modifying**: @Query 어노테이션을 통해 작성된 INSERT, UPDATE, DELETE(SELECT 제외) 쿼리에서 사용되는 어노테이션 이고 기본적으로 JpaRepository에서 제공하는 메서드 혹은 메서드 네이밍으로 만들어진 쿼리에는 적용되지 않습니다.  
+**Query**: SQL과 유사한 JPQL (Java Persistence Query Language) 라는 객체지향 쿼리 언어를 통해 복잡한 쿼리 처리를 지원  
+
+**BoardService**
+```
+
+```
+
+
 
 
 
