@@ -1,28 +1,33 @@
 package com.example.demo.domain;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
+
 import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
-import org.hibernate.annotations.CreationTimestamp;
-
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 @Entity
-public class User {
+public class User extends BaseTimeEntity {
 	
 	@Id
-	@GeneratedValue
-	private Long id;  
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long idu;
 	
 	@Column(nullable = false)
 	private String username;
@@ -38,10 +43,16 @@ public class User {
 	
 	private String role;
 	
-	@CreationTimestamp
-	private Timestamp createDate;
-	
 	@OneToMany(mappedBy = "user")
-	private List<Board> board = new ArrayList<>();
+	private List<Board> boardList;
+
+	@OneToMany(mappedBy = "user")
+	private List<Reply> replyList;
+	
+	//회원 수정 메서드
+	public void update(String password, String name) {
+        this.password = password;
+        this.name = name;
+    }
 	
 }

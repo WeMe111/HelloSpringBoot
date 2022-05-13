@@ -1,49 +1,47 @@
 package com.example.demo.domain.dto;
 
 import java.security.Timestamp;
+import java.util.List;
 
 import com.example.demo.domain.Board;
+import com.example.demo.domain.Reply;
 import com.example.demo.domain.User;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter
 @Setter
-@ToString
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class BoardDto {
 
 	 	private Long idb;
-	    private String writer;
 	    private String title;
 	    private String content;
+	    private String Writer;
+	    private int count;
 	    private User user;
 	    private Timestamp createDate;
 	    private Timestamp updateDate;
+	    private List<Reply> reply;
+	    private String useYn;
 
 	    public Board toEntity(){
 	        Board boardEntity = Board.builder()
 	                .idb(idb)
-	                .writer(writer)
 	                .title(title)
 	                .content(content)
 	                .user(user)
+	                .count(count)
+	                .reply(reply)
+	                .writer(Writer)
+	                .useYn(useYn)
 	                .build();
 	        return boardEntity;
-	    }
-
-	    @Builder
-	    public BoardDto(Long idb, String title, String content, String writer, User user, Timestamp createDate, Timestamp updateDate) {
-	        this.idb = idb;
-	        this.writer = writer;
-	        this.title = title;
-	        this.content = content;
-	        this.createDate = createDate;
-	        this.updateDate = updateDate;
-	        this.user = user;
 	    }
 }

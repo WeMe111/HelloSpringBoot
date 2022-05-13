@@ -17,6 +17,26 @@ public class PrincipalDetails implements UserDetails {
 	public PrincipalDetails(User user) {
 		this.user = user;
 	}
+	
+	public void setUser(User user) {
+		this.user = user;
+	}
+	
+	//사용자 이메일
+    public String getEmail() {
+        return user.getEmail();
+    }
+
+    //사용자 이름
+    public String getName() {
+        return user.getName();
+    }
+
+    //사용자 pk
+    public Long getIdu() {
+        return user.getIdu();
+    }
+
 
 	// 해당 User의 권한을 리턴하는 곳
 	@Override
@@ -41,6 +61,7 @@ public class PrincipalDetails implements UserDetails {
 	public String getUsername() {
 		return user.getUsername();
 	}
+	
 
 	// 계정이 만료되었는지 (true: 만료되지 않음)
 	@Override
@@ -66,6 +87,11 @@ public class PrincipalDetails implements UserDetails {
 	@Override
 	public boolean isEnabled() {
 		return true;
+	}
+
+	public User getUser() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

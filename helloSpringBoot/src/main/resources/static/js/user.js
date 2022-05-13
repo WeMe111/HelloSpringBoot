@@ -15,9 +15,9 @@ let index = {
 
     update: function () {
         let data = {
-            id: $("#id").val(),
+            idu: $("#idu").val(),
             password: $("#password").val(),
-            nickname: $("#nickname").val()
+            name: $("#name").val()
         }
 
         $.ajax({
@@ -28,10 +28,17 @@ let index = {
             dataType: "json"
         }).done(function (res) {
             alert("회원수정이 완료되었습니다.");
-            location.href = "/";
+            location.href = "/user/home";
         }).fail(function (err) {
             alert(JSON.stringify(err));
         });
     }
 }
 index.init();
+
+
+var token = $("meta[name='_csrf']").attr("content");
+var header = $("meta[name='_csrf_header']").attr("content");
+$(document).ajaxSend(function(e, xhr, options) {
+    xhr.setRequestHeader(header, token);
+});

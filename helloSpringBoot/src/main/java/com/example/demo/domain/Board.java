@@ -1,21 +1,29 @@
 package com.example.demo.domain;
 
-import java.sql.Timestamp;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
+import javax.persistence.Transient;
 
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,46 +31,54 @@ import lombok.Setter;
 
 @Entity
 @Getter
+@Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Board {
+@EntityListeners(AuditingEntityListener.class)
+public class Board extends BaseTimeEntity {
 	
 	@Id
-	@GeneratedValue
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long idb;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "id")
+	@JoinColumn(name = "idu")
 	private User user;
 	
-//	@OneToMany(mappedBy = "board")
-//	private List<Reply> comment = new ArrayList<>();
+	@OrderBy("idb desc")  //댓글 작성시 최근 순으로 볼 수 있도록 설정
+	@JsonIgnoreProperties({"board"})
+	@OneToMany(mappedBy = "board", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+	private List<Reply> reply;
 	
 	@Column(nullable = false)
 	private String title;
 	
 	@Lob
+	@Column(nullable = false)
 	private String content;
 	
-	@Column(nullable = false)
 	private String writer;
 	
 	@Column(columnDefinition = "integer default 0", nullable = false)
 	private int count;
 	
-	@CreationTimestamp
-	@Column(updatable = false)
-	private Timestamp createDate;
+	private String useYn;
 	
-	@UpdateTimestamp
-	private Timestamp updateDate;
+	//첨부파일 개수
+	private Long attachCount;
 	
-	@Builder
-	public Board(Long idb, String title, String content, String writer, User user) {
-		this.idb = idb;
-		this.writer = writer;
-		this.title = title;
-		this.content = content;
-		this.user = user;
-	}
-
+	@Transient
+	private String fileIdxs;
+	
+	@Transient
+	private String deleteFileIdxs;
+	
+//	@CreationTimestamp
+//	@Column(updatable = false)
+//	private Timestamp createDate;
+//	
+//	@UpdateTimestamp
+//	private Timestamp updateDate;
+	
 }
