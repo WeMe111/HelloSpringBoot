@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<head th:replace="layout/header :: header" />
+<body>
+	<div class="container">
+		<div th:replace="layout/bodyHeader2 :: bodyHeader" />
+		<div class="d-flex" style="position: relative; bottom: 10px">
+			<h5 style="margin-right: 10px;">총 건수:</h5>
+			<h5 th:text="${boards.totalElements}"></h5>
+		</div>
+		<form class="d-flex" style="position: relative; top: 5px;" method="get" th:action="@{/auth/board/list}">
+    		<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" id="search" name="search" th:value="${param.search}">
+   			<button class="btn btn-outline-primary" type="submit">Search</button>
+		</form>
+		<main class="flex-shrink-0">
+			<div class="container">
+				<div class="p-2"></div>
+				<div th:each="board : ${boards}"
+					class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+					<div class="col p-4 d-flex flex-column position-static">
+						 <a th:href="@{/auth/board/{id}(id=${board.id})}" class="a-title">
+                   			 <h3 class="mb-0 title" style="padding-bottom: 10px;" th:text="${board.title}"></h3>
+                		</a>
+						<div class="card-text mb-auto" th:text="${board.content}"></div>
+						<div class="mb-1 text-muted" style="padding-top: 15px;" th:text="${#temporals.format(board.createdDate, 'yyyy-MM-dd')}"></div>
+						<div class="mb-1 text-muted" style="padding-top: 15px;" th:text="${board.count}"></div>
+					</div>
+				</div>
+			</div>
+		</main>
+		<a  class="btn btn-primary" th:href="@{/auth/board/register}">글쓰기</a>
+
+		<nav aria-label="Page navigation example">
+			<ul class="pagination justify-content-center">
+			    <li class="page-item" th:classappend="${1 == boards.pageable.pageNumber + 1} ? 'disabled' : '' ">
+			      <a class="page-link" th:href="@{/auth/board/list/(page=${boards.pageable.pageNumber - 1}, search=${param.search})}">Previous</a>
+			    </li>
+			    <li class="page-item"  th:classappend="${i == boards.pageable.pageNumber + 1} ? 'active' : '' " th:each="i : ${#numbers.sequence(startPage, endPage)}">
+			      <a class="page-link" th:href="@{/auth/board/list/(page=${i - 1}, search=${param.search})}" th:text="${i}">1</a>
+			    </li>
+			    <li class="page-item" th:classappend="${boards.totalPages == boards.pageable.pageNumber + 1} ? 'disabled' : '' ">
+			      <a class="page-link" th:href="@{/auth/board/list/(page=${boards.pageable.pageNumber + 1}, search=${param.search})}">Next</a>
+			    </li>
+			</ul>
+		</nav>
+		    
+	</div>
+	<div th:replace="layout/footer :: footer" />
+</body>
+</html>

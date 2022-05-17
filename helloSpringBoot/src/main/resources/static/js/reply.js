@@ -11,18 +11,31 @@ let replyIndex = {
         let data = {
             content: $("#reply-content").val(),
         }
-        let idb = $("#idb").val();
+        let boardId = $("#boardId").val();
         console.log(data);
-        console.log(idb);
+        console.log(boardId);
         $.ajax({
             type: "POST",
-            url: "/board/{idb}/reply",
+            url: `/api/v1/board/${boardId}/reply`,
             data: JSON.stringify(data),
             contentType: "application/json; charset=utf-8",
             dataType: "text"
         }).done(function (res) {
             alert("댓글작성이 완료되었습니다.");
-            location.href = "/board/detail/${idb}";
+            location.href = `/auth/board/${boardId}`;
+        }).fail(function (err) {
+            alert(JSON.stringify(err));
+        });
+    },
+
+    replyDelete: function (boardId, replyId) {
+        $.ajax({
+            type: "DELETE",
+            url: `/api/v1/board/${boardId}/reply/${replyId}`,
+            dataType: "text"
+        }).done(function (res) {
+            alert("댓글삭제가 완료되었습니다.");
+            location.href = `/auth/board/${boardId}`;
         }).fail(function (err) {
             alert(JSON.stringify(err));
         });

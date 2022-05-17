@@ -1,98 +1,61 @@
 package com.example.demo.service;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.transaction.Transactional;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.domain.Board;
-import com.example.demo.domain.BoardFile;
-import com.example.demo.domain.dto.BoardDto;
-import com.example.demo.repository.BoardFileRepository;
+import com.example.demo.domain.board.Board;
+import com.example.demo.domain.dto.board.BoardSaveRequestDto;
+import com.example.demo.domain.dto.board.BoardUpdateRequestDto;
+import com.example.demo.domain.user.User;
 import com.example.demo.repository.BoardRepository;
 
 import lombok.RequiredArgsConstructor;
 
-@Service
 @RequiredArgsConstructor
+@Service
 public class BoardService {
 
-	private final BoardRepository boardRepository;
-	private final BoardFileRepository boardFileRepository;
-	
-	public Long savePost(Board board) {
-		return boardRepository.save(board).getIdb();
-	}
-	
-	public Optional<Board> find(Long idb) {
-		return this.boardRepository.findById(idb);
-	}
-	
-	public Page<Board> search(String title, String content, Pageable pageable){
-		return boardRepository.findByTitleContainingOrContentContaining(title, content, pageable);
-	}
-	
-	@Transactional
-	public BoardDto getPost(Long idb) {
-		Optional<Board> boardWeapper = boardRepository.findById(idb);
-		Board board = boardWeapper.get();
-		
-		BoardDto boardDto = BoardDto.builder()
-				.idb(board.getIdb())
-				.title(board.getTitle())
-				.content(board.getContent())
-				.Writer(board.getWriter())
-				.build();
-		
-		return boardDto;
-	}
-	
-	 //게시판 파일 등록
-    @Transactional
-    public void insertBoardFile(Board board) {
-        //파일 등록할게 있을경우만
-        if(board.getFileIdxs() != null) {
-            //파일 등록
-            String fileIdxs = ((String) board.getFileIdxs()).replace("[", "").replace("]", "");
-            String[] fileIdxArray = fileIdxs.split(",");
+    private final BoardRepository boardRepository;
 
-            for (int i=0; i<fileIdxArray.length; i++) {
-                String fileIdx = fileIdxArray[i].trim();
-                BoardFile boardFile = new BoardFile(board.getIdb(), Long.parseLong(fileIdx),"Y") ;
-                boardFileRepository.save(boardFile);
-            }
-        }
+    //글작성 로직
+    @Transactional
+    public Long save(BoardSaveRequestDto boardSaveRequestDto, User user) {
+        boardSaveRequestDto.setUser(user);
+        return boardRepository.save(boardSaveRequestDto.toEntity()).getId();
     }
     
-    public List<BoardFile> selectBoardFile(Long boardIdx) {
-    	return boardFileRepository.findByBoardIdx(boardIdx);
+    //글목록 로직
+    @Transactional(readOnly = true)
+    public Page<Board> findByTitleContainingOrContentContaining(String title, String content, Pageable pageable) {
+        return boardRepository.findByTitleContainingOrContentContaining(title, content, pageable);
     }
-	
-//	@Transactional
-//	public void deletePost(Long idb) {
-//		boardRepository.deleteById(idb);
-//	}
-	public void deleteBoard(List<String> boardIdbArray){
-        for(int i=0; i<boardIdbArray.size(); i++) {
-            String boardIdb = boardIdbArray.get(i);
-            Optional<Board> optional = boardRepository.findById(Long.parseLong(boardIdb));
-            if(optional.isPresent()){
-                Board board = optional.get();
-                board.setUseYn("N");
-                boardRepository.save(board);
-            }
-            else{
-                throw new NullPointerException();
-            }
-        }
+    
+    //글상세 로직
+    @Transactional(readOnly = true)
+    public Board detail(Long id) {
+        return boardRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 id가 없습니다. id=" + id));
     }
-	
-	public int updateCount(Long idb) {
-		return boardRepository.updateCount(idb);
-	}
+    
+    //글삭제 로직
+    @Transactional
+    public void deleteById(Long id) {
+        boardRepository.deleteById(id);
+    }
 
+    //글수정 로직
+   @Transactional
+   public Long update(Long id, BoardUpdateRequestDto boardUpdateRequestDto) {
+       Board board = boardRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 id가 없습니다. id=" + id));
+       board.update(boardUpdateRequestDto.getTitle(), boardUpdateRequestDto.getContent());
+       return id;
+   }
+    
+   //글 조회수 로직
+   @Transactional
+   public int updateCount(Long id) {
+       return boardRepository.updateCount(id);
+   }
+   
 }

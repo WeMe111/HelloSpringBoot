@@ -2,31 +2,40 @@ package com.example.demo.repository;
 
 import java.util.List;
 
+import javax.transaction.Transactional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.query.Param;
 
-import com.example.demo.domain.BoardFile;
-import com.example.demo.domain.FileEntity;
+import com.example.demo.domain.board.BoardFile;
 
-@Repository
-public interface BoardFileRepository extends CrudRepository<BoardFile, Long>{
-
-	@Query(value =
-            "SELECT \n"+
-                    "T1.FILE_ID\n"+
-                    ",T1.BOARD_IDX\n"+
-                    ",T1.USE_YN\n"+
-                    ",T2.ORIG_NM AS ORIG_NM\n"+
-            "FROM \n"+
-            "board_file T1\n"+
-            ",file T2\n"+
-            "WHERE\n"+
-            "T1.FILE_ID = T2.FILE_IDX\n"+
-            "AND T1.USE_YN = 'Y'\n"+
-            "AND T1.BOARD_IDX = :boardIdx\n"
-            , nativeQuery = true
-    )
-    List<BoardFile> findByBoardIdx(Long boardIdx);
+public interface BoardFileRepository extends JpaRepository<BoardFile, Long> {
 	
+	BoardFile findByid(int id);
+
+//	static final String SELECT_FILE_ID= "SELECT ID FROM board_file "
+//			+ "WHERE BOARD_ID = :boardId AND DELETE_YN != 'Y'";
+//	
+//	static final String UPDATE_DELETE_YN= "UPDATE board_file "
+//			+ "SET DELETE_YN = 'Y' "
+//			+ "WHERE ID IN (:deleteIdList)";
+//	
+//	static final String DELETE_BOARD_FILE_YN= "UPDATE board_file "
+//			+ "SET DELETE_YN = 'Y' "
+//			+ "WHERE BOARD_ID IN (:boardIdList)";
+//	
+//	@Query(value = SELECT_FILE_ID, nativeQuery = true)
+//	public List<Long> findByBoardId(@Param("boardId") Long boardId);
+//	
+//	@Transactional
+//	@Modifying
+//	@Query(value = UPDATE_DELETE_YN, nativeQuery = true)
+//	public int updateDeleteYn(@Param("deleteIdList") Long[] deleteIdList);
+//	
+//	@Transactional
+//	@Modifying
+//	@Query(value = DELETE_BOARD_FILE_YN, nativeQuery = true)
+//	public int deleteBoardFileYn(@Param("boardIdList") Long[] boardIdList);
 }

@@ -11,10 +11,19 @@
 			<h1>HelloSpringBoot</h1>
 			<p class="lead">회원 기능</p>
 			<p>
-				<a class="btn btn-lg btn-secondary" href="/signup">회원 가입</a> 
-				<a class="btn btn-lg btn-secondary" href="/login">로그인</a>
+				<a class="btn btn-lg btn-secondary" href="/auth/signup">회원 가입</a> 
+				<a class="btn btn-lg btn-secondary" href="/auth/login">로그인</a>
 			</p>
 		</div>
+		<div class="container">
+		<form action="/" method="post" enctype="multipart/form-data">
+		<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+			<input type="file" name="files"> 
+			<!-- 여기서 files는 controller에 @RequestPart MultipartFile files -->
+
+			<button type="submit" class="btn btn-dark">업로드</button>
+		</form>
+	</div>
 		<div th:replace="layout/footer :: footer" />
 	</div>
 </body>

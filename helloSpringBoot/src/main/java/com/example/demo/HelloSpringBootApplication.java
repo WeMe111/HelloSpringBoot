@@ -9,20 +9,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 
 @SpringBootApplication
-@EnableJpaAuditing
 public class HelloSpringBootApplication extends SpringBootServletInitializer{
-
-	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
-		return builder.sources(HelloSpringBootApplication.class);
-	}
-	
 	public static void main(String[] args) {
 		SpringApplication.run(HelloSpringBootApplication.class, args);
-	}
-
-	@Bean 
-	public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
-		return new HiddenHttpMethodFilter();
 	}
 }

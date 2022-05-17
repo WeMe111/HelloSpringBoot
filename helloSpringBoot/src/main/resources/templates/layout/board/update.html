@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<head th:replace="layout/header :: header" />
+<body>
+	<div class="container">
+		<div th:replace="layout/bodyHeader2 :: bodyHeader" />
+		<main class="form-signin" style="max-width: 100%;">
+   			<div class="container border rounded flex-md-row mb-4 shadow-sm h-md-250">
+        		<form>
+            		<h1 class="h3 m-3 fw-normal">글수정</h1>
+           		 	<input type="hidden" id="id" th:value="${board.id}">
+            		<div class="form-floating m-3">
+            			<label for="title">제목</label>
+                		<input type="text" th:value="${board.title}" class="form-control" id="title" placeholder="제목을 입력하세요." required>
+            		</div>
+            		<div class="form-floating m-3">
+            			<label for="content">내용</label>
+                		<textarea class="form-control" th:text="${board.content}" rows="5" id="content" style="height: 450px;"></textarea>
+            		</div>
+        		</form>
+        		<button class="w-100 btn btn-lg btn-primary" id="btn-update" style="max-width: 250px; margin-left: 200px;">수정완료</button>
+    		</div>
+		</main>
+		<br>
+		<div th:replace="layout/footer :: footer" />
+	</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script th:src="@{/js/board.js}"></script>
+</body>
+</html>

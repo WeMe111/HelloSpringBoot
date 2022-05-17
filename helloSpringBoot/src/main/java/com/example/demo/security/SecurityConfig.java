@@ -3,6 +3,7 @@ package com.example.demo.security;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -10,42 +11,46 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+	private final PrincipalDetailService principalDetailService;
 	
-	 @Bean
-	 public BCryptPasswordEncoder encoderpwd() {
-		 return new BCryptPasswordEncoder();
-	 }
-	
-	 @Bean
-	 @Override
-	 public AuthenticationManager authenticationManagerBean() throws Exception {
-		 return super.authenticationManagerBean();
-	 }
+	@Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 	
 	@Override
-	public void configure(HttpSecurity http) throws Exception{
-		http
-			.authorizeRequests()  //권한 
-			.antMatchers("/index").authenticated()
-			.antMatchers("/file-download/**").permitAll()  //파일 다운로드
-			.antMatchers("/resource/**/images/**").permitAll()  // 이미지
-			.antMatchers("/user/home", "/board/**").access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
-			.antMatchers("/admin/userList").access("hasRole('ROLE_ADMIN')")
-			.anyRequest().permitAll()
-			.and()  
-			.formLogin()
-			.loginPage("/login")
-			.loginProcessingUrl("/login") //로그인 주소가 호출이 되면 시큐리티가 낚아채서 대신 로그인을 진행
-			.defaultSuccessUrl("/user/home")
-			.and()
-			.logout()
-			.logoutUrl("/logout")
-			.logoutSuccessUrl("/")
-			.invalidateHttpSession(true);
-	}
-
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(principalDetailService).passwordEncoder(bCryptPasswordEncoder());
+    }
+	
+	@Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+	
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                    .authorizeRequests()  //HttpServletRequest 요청 URL에 따라 접근 권한을 설정합니다. 
+                    .antMatchers("/").permitAll()
+                    .antMatchers("/layout/**").access("hasRole('USER') or hasRole('ADMIN')")
+                    .antMatchers("/user/admin/userList").access("hasRole('ADMIN')")
+                    .antMatchers("/file-download/**").permitAll()  //파일 다운로드
+        			.antMatchers("/resource/**/images/**").permitAll()  // 이미지
+                .and()
+                    .formLogin()
+                    .loginPage("/auth/login")
+                    .loginProcessingUrl("/auth/api/v1/user/login")  //로그인 주소가 호출이 되면 시큐리티가 낚아채서 대신 로그인을 진행
+                    .defaultSuccessUrl("/auth/user/home");
+        
+        http
+        			.rememberMe().tokenValiditySeconds(60 * 60 * 7)
+        			.userDetailsService(principalDetailService);
+    }
 }

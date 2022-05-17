@@ -31,6 +31,10 @@ dependencies {
 	//Security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
+	
+	//파일명 랜덤 문자열 생성
+	implementation 'org.apache.commons:commons-lang3'
+	implementation 'commons-io:commons-io:2.6'
 }
 
 tasks.named('test') {
