@@ -16,6 +16,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Transient;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import com.example.demo.domain.reply.Reply;
 import com.example.demo.domain.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -42,6 +44,7 @@ public class Board extends BaseTimeEntity {
     @Lob
     private String content;
 
+    @Column(columnDefinition = "integer default 0", nullable = false)
     private int count; //조회수
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -53,10 +56,18 @@ public class Board extends BaseTimeEntity {
     @OneToMany(mappedBy = "board", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     private List<Reply> replyList;
     
+    @Column
+    private String useYn;
+    
     //글 수정 더티체킹
     public void update(String title, String content) {
         this.title = title;
         this.content = content;
+    }
+    
+    //글 삭제
+    public void delete(String useYn) {
+    	this.useYn = useYn;
     }
     
 }

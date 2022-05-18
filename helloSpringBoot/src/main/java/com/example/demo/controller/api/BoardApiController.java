@@ -1,13 +1,13 @@
 package com.example.demo.controller.api;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.domain.dto.board.BoardDeleteRequestDto;
 import com.example.demo.domain.dto.board.BoardSaveRequestDto;
 import com.example.demo.domain.dto.board.BoardUpdateRequestDto;
 import com.example.demo.security.PrincipalDetail;
@@ -28,10 +28,14 @@ public class BoardApiController {
     }
     
     //글삭제 API
-    @DeleteMapping("/api/v1/board/{id}")
-    public Long deleteById(@PathVariable Long id) {
-        boardService.deleteById(id);
-        return id;
+//    @DeleteMapping("/api/v1/board/{id}")
+//    public Long deleteById(@PathVariable Long id) {
+//        boardService.deleteById(id);
+//        return id;
+//    }
+    @PutMapping("/api/v1/board/delete/{id}")
+    public Long delete(@PathVariable Long id, @RequestBody BoardDeleteRequestDto boardDeleteRequestDto) {
+        return boardService.delete(id, boardDeleteRequestDto);
     }
     
     // 글수정 API

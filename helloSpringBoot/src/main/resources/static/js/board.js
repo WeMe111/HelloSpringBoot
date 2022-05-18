@@ -1,4 +1,4 @@
-'use strict';
+'board strict';
 
 let index = {
     init: function () {
@@ -6,7 +6,7 @@ let index = {
             this.save();
         });
         $("#btn-delete").on("click", () => {
-            this.deleteById();
+            this.delete();
         });
         $("#btn-update").on("click", () => {
             this.update();
@@ -16,7 +16,8 @@ let index = {
     save: function () {
         let data = {
             title: $("#title").val(),
-            content: $("#content").val()
+            content: $("#content").val(),
+            useYn: 'Y'
         }
 
         $.ajax({
@@ -33,12 +34,18 @@ let index = {
         });
     },
 
-    deleteById: function () {
-        let id = $("#id").text();
+    delete: function () {
+		let id = $("#id").val();
+		
+        let data = {
+		useYn: 'N'
+		}
 
         $.ajax({
-            type: "DELETE",
-            url: "/api/v1/board/" + id,
+            type: "PUT",
+            url: "/api/v1/board/delete/" + id,
+            data: JSON.stringify(data),
+            contentType: "application/json; charset=utf-8",
             dataType: "json"
         }).done(function (res) {
             alert("글삭제가 완료되었습니다.");
@@ -55,8 +62,6 @@ let index = {
             title: $("#title").val(),
             content: $("#content").val()
         }
-        console.log(id);
-        console.log(data);
 
         $.ajax({
             type: "PUT",

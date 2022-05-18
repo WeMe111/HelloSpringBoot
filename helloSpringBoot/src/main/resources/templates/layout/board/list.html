@@ -6,19 +6,32 @@
 <body>
 	<div class="container">
 		<div th:replace="layout/bodyHeader2 :: bodyHeader" />
-		<div class="d-flex" style="position: relative; bottom: 10px">
-			<h5 style="margin-right: 10px;">총 건수:</h5>
-			<h5 th:text="${boards.totalElements}"></h5>
-		</div>
 		<form class="d-flex" style="position: relative; top: 5px;" method="get" th:action="@{/auth/board/list}">
     		<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" id="search" name="search" th:value="${param.search}">
    			<button class="btn btn-outline-primary" type="submit">Search</button>
 		</form>
-		<main class="flex-shrink-0">
+		<!--  
+		<form class="row g-3 container text-center" style="margin-top: 100px;" th:action="@{/auth/board/list}" method="get">
+		    <div class="col-auto" >
+		        <select class="form-select" style="width:100px;height:40px; display:inline;" id="search" name="search" >
+		            <option value="Title">제목</option>
+		            <option value="Content">내용</option>
+		        </select>
+		    </div>
+		
+		    <div class="col-auto">
+		        <input class="form-control"  type="text" name="keyword">
+		    </div>
+		
+		    <div class="col-auto">
+		        <input class="form-control"  type="submit" value="검색">
+		    </div>
+		</form>-->
+		<main  th:each="board : ${boards}" class="flex-shrink-0">
+			<th:block th:if="${board.useYn == 'Y'}">
 			<div class="container">
 				<div class="p-2"></div>
-				<div th:each="board : ${boards}"
-					class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+				<div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
 					<div class="col p-4 d-flex flex-column position-static">
 						 <a th:href="@{/auth/board/{id}(id=${board.id})}" class="a-title">
                    			 <h3 class="mb-0 title" style="padding-bottom: 10px;" th:text="${board.title}"></h3>
@@ -30,6 +43,8 @@
 				</div>
 			</div>
 		</main>
+		</th:block>
+		<br>
 		<a  class="btn btn-primary" th:href="@{/auth/board/register}">글쓰기</a>
 
 		<nav aria-label="Page navigation example">

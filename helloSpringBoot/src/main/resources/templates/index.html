@@ -16,13 +16,6 @@
 			</p>
 		</div>
 		<div class="container">
-		<form action="/" method="post" enctype="multipart/form-data">
-		<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-			<input type="file" name="files"> 
-			<!-- 여기서 files는 controller에 @RequestPart MultipartFile files -->
-
-			<button type="submit" class="btn btn-dark">업로드</button>
-		</form>
 	</div>
 		<div th:replace="layout/footer :: footer" />
 	</div>

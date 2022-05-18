@@ -25,7 +25,7 @@
 
             <div class="form-floating m-3">
             <label for="password">패스워드</label>
-                <input type="password" class="form-control" id="password" placeholder="패스워드를 입력하세요." required minlength="8" size="20"  readonly th:value="${#authentication.principal.password}">
+                <input type="password" class="form-control" id="password" placeholder="패스워드를 입력하세요." required minlength="8" size="20">
                 <div class="valid-feedback" >
                     very good!
                 </div>
@@ -35,7 +35,7 @@
             </div>
             <div class="form-floating m-3">
             <label for="email">이메일</label>
-                <input type="email" th:value="${#authentication.principal.email}" class="form-control" id="email" placeholder="이메일을 입력하세요." required readonly>
+                <input type="email" th:value="${#authentication.principal.email}" class="form-control" id="email" placeholder="이메일을 입력하세요." required>
                 <div class="valid-feedback">
                     nice!
                 </div>

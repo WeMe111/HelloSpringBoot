@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.domain.board.Board;
+import com.example.demo.domain.dto.board.BoardDeleteRequestDto;
 import com.example.demo.domain.dto.board.BoardSaveRequestDto;
 import com.example.demo.domain.dto.board.BoardUpdateRequestDto;
 import com.example.demo.domain.user.User;
@@ -39,9 +40,15 @@ public class BoardService {
     }
     
     //글삭제 로직
+//    @Transactional
+//    public void deleteById(Long id) {
+//        boardRepository.deleteById(id);
+//    }
     @Transactional
-    public void deleteById(Long id) {
-        boardRepository.deleteById(id);
+    public Long delete(Long id, BoardDeleteRequestDto boardDeleteRequestDto) {
+    	Board board = boardRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 id가 없습니다." + id));
+    	board.delete(boardDeleteRequestDto.getUseYn());
+        return id;
     }
 
     //글수정 로직
