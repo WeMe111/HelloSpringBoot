@@ -78,7 +78,7 @@ let index = {
     }
 }
 
-
+/*
 function uploadFile() {
   $.ajax({
     url: "/uploadFile",
@@ -97,7 +97,7 @@ function uploadFile() {
       // ...
     }
   });
-}
+}*/
 index.init();
 
 var token = $("meta[name='_csrf']").attr("content");

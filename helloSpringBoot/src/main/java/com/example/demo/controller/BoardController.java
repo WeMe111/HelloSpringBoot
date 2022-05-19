@@ -22,11 +22,24 @@ public class BoardController {
 	private final BoardService boardService;
 
 	// 게시판 페이지 이동
+//	@GetMapping("/auth/board/list")
+//	public String index(Model model,
+//			@PageableDefault(size = 5, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
+//			@RequestParam(required = false, defaultValue = "") String search) {
+//		Page<Board> boards = boardService.findByTitleContainingOrContentContaining(search, search, pageable);
+//		int startPage = Math.max(1, boards.getPageable().getPageNumber() - 4);
+//		int endPage = Math.min(boards.getTotalPages(), boards.getPageable().getPageNumber() + 4);
+//		model.addAttribute("startPage", startPage);
+//		model.addAttribute("endPage", endPage);
+//		model.addAttribute("boards", boards);
+//		return "layout/board/list";
+//	}
 	@GetMapping("/auth/board/list")
-	public String index(Model model,
+	public String list(Model model,
 			@PageableDefault(size = 5, sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
-			@RequestParam(required = false, defaultValue = "") String search) {
-		Page<Board> boards = boardService.findByTitleContainingOrContentContaining(search, search, pageable);
+			@RequestParam(required = false, defaultValue = "") String keyword,
+			@RequestParam(required = false, defaultValue = "") String select) {
+		Page<Board> boards = boardService.selectList(pageable, select, keyword);
 		int startPage = Math.max(1, boards.getPageable().getPageNumber() - 4);
 		int endPage = Math.min(boards.getTotalPages(), boards.getPageable().getPageNumber() + 4);
 		model.addAttribute("startPage", startPage);
@@ -34,6 +47,7 @@ public class BoardController {
 		model.addAttribute("boards", boards);
 		return "layout/board/list";
 	}
+
 
 	// 글작성 페이지 이동
 	@GetMapping("/auth/board/register")

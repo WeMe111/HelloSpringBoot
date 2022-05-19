@@ -21,7 +21,7 @@ let index = {
     },
 
     save: function () {
-        let data = { //JavaScript Object
+        let data = { 
             username: $("#username").val(),
             password: $("#password").val(),
             email: $("#email").val(),

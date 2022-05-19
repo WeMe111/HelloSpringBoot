@@ -1,0 +1,17 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/header :: header">
+<title>HelloSpringBoot</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+	<div class="container">
+		<div th:replace="layout/bodyHeader2 :: bodyHeader" />
+		<div class="jumbotron">
+			<h1>관리자만 들어갈수있습니다.</h1>
+			<button class="btn btn-secondary" onclick="history.back()">돌아가기</button>
+		</div>
+		<div th:replace="layout/footer :: footer" />
+	</div>
+</body>
+</html>

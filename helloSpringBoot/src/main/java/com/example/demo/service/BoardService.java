@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.domain.board.Board;
 import com.example.demo.domain.dto.board.BoardDeleteRequestDto;
+import com.example.demo.domain.dto.board.BoardRequestDto;
 import com.example.demo.domain.dto.board.BoardSaveRequestDto;
 import com.example.demo.domain.dto.board.BoardUpdateRequestDto;
 import com.example.demo.domain.user.User;
@@ -28,10 +29,24 @@ public class BoardService {
     }
     
     //글목록 로직
+//    @Transactional(readOnly = true)
+//    public Page<Board> findByTitleContainingOrContentContaining(String title, String content, Pageable pageable) {
+//        return boardRepository.findByTitleContainingOrContentContaining(title, content, pageable);
+//    }
     @Transactional(readOnly = true)
-    public Page<Board> findByTitleContainingOrContentContaining(String title, String content, Pageable pageable) {
-        return boardRepository.findByTitleContainingOrContentContaining(title, content, pageable);
-    }
+	public Page<Board> selectList(Pageable pageable, String select, String keyword) {
+		
+		String useYn = "Y";
+		
+		if(select.equals("title")) {
+			return boardRepository.findByTitleContainingAndUseYnIgnoreCase(keyword, useYn, pageable);
+		} else if(select.equals("content")) {
+			return boardRepository.findByContentContainingAndUseYnIgnoreCase(keyword, useYn, pageable);
+		} else {
+			return boardRepository.findByUseYn(useYn, pageable);
+		}
+		
+	}
     
     //글상세 로직
     @Transactional(readOnly = true)

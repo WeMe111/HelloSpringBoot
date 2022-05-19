@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import java.util.List;
+
 import javax.transaction.Transactional;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,5 +38,10 @@ public class UserService {
         principalDetail.setUser(userEntity);
         return userEntity.getId();
     }
+    
+    //유저목록
+    public List<User> findUser(){
+		return userRepository.findAll();
+	}
     
 }

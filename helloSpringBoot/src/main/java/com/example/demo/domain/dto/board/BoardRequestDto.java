@@ -15,11 +15,13 @@ public class BoardRequestDto {
 	private Long id;
 	private String title;
 	private String content;
+	private String useYn;
 	
 	public Board toEntity() {
 		return Board.builder()
 			.title(title)
 			.content(content)
+			.useYn(useYn)
 			.build();
 	}
 }
