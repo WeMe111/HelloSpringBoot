@@ -1086,7 +1086,7 @@ IgnoreCase <- 대소문자 관계 없이 검색하는 쿼리
 **Modifying**: @Query 어노테이션을 통해 작성된 INSERT, UPDATE, DELETE(SELECT 제외) 쿼리에서 사용되는 어노테이션 이고 기본적으로 JpaRepository에서 제공하는 메서드 혹은 메서드 네이밍으로 만들어진 쿼리에는 적용되지 않습니다.  
 **Query**: SQL과 유사한 JPQL (Java Persistence Query Language) 라는 객체지향 쿼리 언어를 통해 복잡한 쿼리 처리를 지원  
 
-**BoardService**
+**BoardService**  
 <details>   
 <summary>접기/펼치기</summary>  
 
@@ -1153,9 +1153,583 @@ public class BoardService {
 
 </details>  
 
+**register.html**  
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<head th:replace="layout/header :: header" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<body>
+	<div class="container">
+		<div th:replace="layout/bodyHeader2 :: bodyHeader" />
+		<form id="frm" action="/auth/board/register" method="post" enctype="multipart/form-data">
+            <h1 class="h3 m-3 fw-normal">글쓰기</h1>
+            <div class="form-floating m-3">
+            <label for="title">제목</label>
+                <input type="text" class="form-control" id="title" placeholder="제목을 입력하세요." required>
+            </div>
+            <div class="form-floating m-3">
+            <label for="content">내용</label>
+                <textarea class="form-control" rows="5" id="content" style="height: 450px;"></textarea>
+            </div>
+            
+            <div >
+			    <img th:each="imageFile : ${board.imageFiles}"
+			         th:if="${imageFile.attachmentType == T(register.demo.domain.file.AttachmentType).IMAGE}"
+			         th:src="@{/main/board/images/{imageFile}(imageFile=${imageFile.storeFilename})}" width="300" height="300" style="margin-right: 5px"/>
+			</div>
+			<div>
+			    <a th:each="generalFile : ${board.generalFiles}"
+			       th:if="${generalFile.attachmentType == T(register.demo.domain.file.AttachmentType).GENERAL}"
+			       th:href="@{/main/board/attaches/{generalFile}(generalFile=${generalFile.storeFilename}, originName=${generalFile.originFilename})}"
+			       th:text="${generalFile.originFilename}" style="margin-right: 5px"/><br/>
+			</div>
+            
+		<div th:replace="layout/footer :: footer" />
+	</div>
+	<script th:src="@{/js/board.js}"></script>
+</body>
+</html>
+```
+
+</details>  
 
 
+**list.html**  
+<details>   
+<summary>접기/펼치기</summary>  
 
+```Java
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<head th:replace="layout/header :: header" />
+<body>
+	<div class="container">
+		<div th:replace="layout/bodyHeader2 :: bodyHeader" />
+		<form class="form-inline d-flex justify-content-end" method="GET" th:action="@{/auth/board/list}">
+            <div class="form-group mx-sm-3 mb-2">
+                <select class="form-control" aria-label="Default select example" name="select">
+					<option value="title">제목</option>
+					<option value="content">내용</option>
+				</select>
+				<label for="search" class="sr-only">검색어 입력</label>
+                <input type="search" placeholder="Search" class="form-control me-2" id="search" name="keyword" th:value="${param.keyword}">
+            </div>
+            <button type="submit" class="btn btn-outline-primary">Search</button>
+        </form>
+            
+		<main  th:each="board : ${boards}" class="flex-shrink-0">
+			<th:block th:if="${board.useYn == 'Y'}">
+			<div class="container">
+				<div class="p-2"></div>
+				<div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+					<div class="col p-4 d-flex flex-column position-static">
+						 <a th:href="@{/auth/board/{id}(id=${board.id})}" class="a-title">
+                   			 <h3 class="mb-0 title" style="padding-bottom: 10px;" th:text="${board.title}"></h3>
+                		</a>
+						<div class="card-text mb-auto" th:text="${board.content}"></div>
+						<div class="mb-1 text-muted" style="padding-top: 15px;" th:text="${#temporals.format(board.createdDate, 'yyyy-MM-dd')}"></div>
+						<div class="mb-1 text-muted" style="padding-top: 15px;" th:text="${board.count}"></div>
+					</div>
+				</div>
+			</div>
+		</main>
+		</th:block>
+		<br>
+		<a  class="btn btn-primary" th:href="@{/auth/board/register}">글쓰기</a>
+
+		<nav aria-label="Page navigation example">
+			<ul class="pagination justify-content-center">
+			    <li class="page-item" th:classappend="${1 == boards.pageable.pageNumber + 1} ? 'disabled' : '' ">
+			      <a class="page-link" th:href="@{/auth/board/list/(page=${boards.pageable.pageNumber - 1}, search=${param.search})}">Previous</a>
+			    </li>
+			    <li class="page-item"  th:classappend="${i == boards.pageable.pageNumber + 1} ? 'active' : '' " th:each="i : ${#numbers.sequence(startPage, endPage)}">
+			      <a class="page-link" th:href="@{/auth/board/list/(page=${i - 1}, search=${param.search})}" th:text="${i}">1</a>
+			    </li>
+			    <li class="page-item" th:classappend="${boards.totalPages == boards.pageable.pageNumber + 1} ? 'disabled' : '' ">
+			      <a class="page-link" th:href="@{/auth/board/list/(page=${boards.pageable.pageNumber + 1}, search=${param.search})}">Next</a>
+			    </li>
+			</ul>
+		</nav>
+		    
+	</div>
+	<div th:replace="layout/footer :: footer" />
+</body>
+</html>
+
+```
+
+</details>  
+
+
+**detail.html**  
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<head th:replace="layout/header :: header" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<body>
+	<div class="container">
+		<div th:replace="layout/bodyHeader2 :: bodyHeader" />
+		<table class="table table-striped">
+    <thead>
+    <tr>
+        <th scope="col">글 번호</th>
+        <th scope="col">작성자</th>
+        <th scope="col">조회수</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <th scope="row" th:text="${board.id}" id="id"></th>
+        <td th:text="${board.user.username}"></td>
+        <td th:text="${board.count}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<main class="form-signin" style="max-width: 100%;">
+    <div class="container border rounded flex-md-row mb-4 shadow-sm h-md-250">
+        <h1 class="h3 m-3 fw-normal">글상세</h1>
+        <hr/>
+        <div class="form-floating m-3">
+            <h3 th:text="${board.title}" style="margin-bottom: 50px;"></h3>
+        </div>
+        <div class="form-floating m-3">
+            <p th:text="${board.content}"></p>
+        </div>
+
+
+    </div>
+    <span th:if="${board.user.id == #authentication.principal.id}">
+        <a th:href="@{/board/{id}/update(id=${board.id})}" class="btn btn-warning" id="btn-update">수정</a>
+    </span>
+    <button class="btn btn-secondary" onclick="history.back()">뒤로</button>
+
+    <div class="card mb-2 mt-5">
+
+        <div class="card-header bg-light">
+            <i class="fa fa-comment fa"></i> 댓글
+        </div>
+        <form>
+            <div class="card-body">
+                <input type="hidden" id="boardId" th:value="${board.id}">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <textarea class="form-control" id="reply-content" rows="1"></textarea>
+                        <button id="reply-btn-save" type="button" class="btn btn-primary mt-3">등록</button>
+                    </li>
+                </ul>
+            </div>
+        </form>
+    </div>
+    <br/>
+    <div class="card">
+        <div class="card-header">댓글</div>
+        <ul id="reply--box" class="list-group" th:each="reply : ${board.replyList}">
+            <li th:id="'reply--' + ${reply.id}" class="list-group-item d-flex justify-content-between">
+                <div th:text="${reply.content}"></div>
+                <div class="d-flex" >
+                    <span class="text-monospace">작성자: &nbsp;</span><div class="text-monospace" th:text="${reply.user.username}"></div>
+                    <span th:if="${reply.user.id == #authentication.principal.id}">
+                        <button th:onclick="|replyIndex.replyDelete('${board.id}', '${reply.id}')|" class="badge btn-danger" style="margin-left: 10px;">삭제</button>
+                    </span>
+                </div>
+            </li>
+        </ul>
+    </div>
+</main>
+		<div th:replace="layout/footer :: footer" />
+	</div>
+<script th:src="@{/js/board.js}"></script>
+<script th:src="@{/js/reply.js}"></script>
+</body>
+</html>
+```
+
+</details>  
+
+
+**update.html**(게시글 수정)  
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<head th:replace="layout/header :: header" />
+<body>
+	<div class="container">
+		<div th:replace="layout/bodyHeader2 :: bodyHeader" />
+		<main class="form-signin" style="max-width: 100%;">
+   			<div class="container border rounded flex-md-row mb-4 shadow-sm h-md-250">
+        		<form>
+            		<h1 class="h3 m-3 fw-normal">글수정</h1>
+           		 	<input type="hidden" id="id" th:value="${board.id}">
+            		<div class="form-floating m-3">
+            			<label for="title">제목</label>
+                		<input type="text" th:value="${board.title}" class="form-control" id="title" placeholder="제목을 입력하세요." required>
+            		</div>
+            		<div class="form-floating m-3">
+            			<label for="content">내용</label>
+                		<textarea class="form-control" th:text="${board.content}" rows="5" id="content" style="height: 450px;"></textarea>
+            		</div>
+        		</form>
+        		<button class="btn btn-danger" id="btn-delete" style="margin-left: 20px;">삭제</button>
+        		<button class="w-100 btn btn-lg btn-primary" id="btn-update" style="max-width: 250px; margin-left: 140px;">수정완료</button>
+    		</div>
+		</main>
+		<br>
+		<div th:replace="layout/footer :: footer" />
+	</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script th:src="@{/js/board.js}"></script>
+</body>
+</html>
+```
+
+</details>  
+
+
+# 댓글 구현
+## Reply 엔티티
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Entity
+public class Reply extends BaseTimeEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 500)
+    private String content;
+
+    @ManyToOne
+    @JoinColumn(name = "boardId")
+    private Board board;
+
+    @ManyToOne
+    @JoinColumn(name = "userId")
+    private User user;
+    
+    public void save(Board board, User user) {
+        this.board = board;
+        this.user = user;
+    }
+}
+```
+
+</details>  
+
+
+## ReplyRepository
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+public interface ReplyRepository extends JpaRepository<Reply, Long> {
+
+}
+
+```
+
+</details>  
+
+
+## ReplyService
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+@RequiredArgsConstructor
+@Service
+public class ReplyService {
+
+    private final ReplyRepository replyRepository;
+    private final BoardRepository boardRepository;
+
+    @Transactional
+    public void replySave(Long boardId, Reply reply, User user) {
+        Board board = boardRepository.findById(boardId).orElseThrow(() -> new IllegalArgumentException("해당 boardId가 없습니다. id=" + boardId));
+
+        reply.save(board, user);
+
+        replyRepository.save(reply);
+    }
+    
+    @Transactional
+    public void replyDelete(Long replyId) {
+        replyRepository.deleteById(replyId);
+    }
+}
+```
+
+</details>  
+
+
+## ReplyApiController
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+@RequiredArgsConstructor
+@RestController
+public class ReplyApiController {
+	
+	private final ReplyService replyService;
+
+	//댓글저장
+    @PostMapping("/api/v1/board/{boardId}/reply")
+    public void save(@PathVariable Long boardId,
+                     @RequestBody Reply reply,
+                     @AuthenticationPrincipal PrincipalDetail principalDetail) {
+        replyService.replySave(boardId, reply, principalDetail.getUser());
+    }
+
+    //댓글삭제
+    @DeleteMapping("/api/v1/board/{boardId}/reply/{replyId}")
+    public void delete(@PathVariable Long replyId) {
+        replyService.replyDelete(replyId);
+    }
+    
+}
+
+```
+
+</details>  
+
+
+## detail.html
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<head th:replace="layout/header :: header" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<body>
+
+	...
+
+    <div class="card mb-2 mt-5">
+
+        <div class="card-header bg-light">
+            <i class="fa fa-comment fa"></i> 댓글
+        </div>
+        <form>
+            <div class="card-body">
+                <input type="hidden" id="boardId" th:value="${board.id}">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <textarea class="form-control" id="reply-content" rows="1"></textarea>
+                        <button id="reply-btn-save" type="button" class="btn btn-primary mt-3">등록</button>
+                    </li>
+                </ul>
+            </div>
+        </form>
+    </div>
+    <br/>
+    <div class="card">
+        <div class="card-header">댓글</div>
+        <ul id="reply--box" class="list-group" th:each="reply : ${board.replyList}">
+            <li th:id="'reply--' + ${reply.id}" class="list-group-item d-flex justify-content-between">
+                <div th:text="${reply.content}"></div>
+                <div class="d-flex" >
+                    <span class="text-monospace">작성자: &nbsp;</span><div class="text-monospace" th:text="${reply.user.username}"></div>
+                    <span th:if="${reply.user.id == #authentication.principal.id}">
+                        <button th:onclick="|replyIndex.replyDelete('${board.id}', '${reply.id}')|" class="badge btn-danger" style="margin-left: 10px;">삭제</button>
+                    </span>
+                </div>
+            </li>
+        </ul>
+    </div>
+</main>
+		<div th:replace="layout/footer :: footer" />
+	</div>
+<script th:src="@{/js/board.js}"></script>
+<script th:src="@{/js/reply.js}"></script>
+</body>
+</html>
+```
+
+</details>  
+
+## reply.js
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+'use strict';
+
+let replyIndex = {
+    init: function () {
+        $("#reply-btn-save").on("click", () => {
+            this.replySave();
+        });
+    },
+
+    replySave: function () {
+        let data = {
+            content: $("#reply-content").val(),
+        }
+        let boardId = $("#boardId").val();
+        console.log(data);
+        console.log(boardId);
+        $.ajax({
+            type: "POST",
+            url: `/api/v1/board/${boardId}/reply`,
+            data: JSON.stringify(data),
+            contentType: "application/json; charset=utf-8",
+            dataType: "text"
+        }).done(function (res) {
+            alert("댓글작성이 완료되었습니다.");
+            location.href = `/auth/board/${boardId}`;
+        }).fail(function (err) {
+            alert(JSON.stringify(err));
+        });
+    },
+
+    replyDelete: function (boardId, replyId) {
+        $.ajax({
+            type: "DELETE",
+            url: `/api/v1/board/${boardId}/reply/${replyId}`,
+            dataType: "text"
+        }).done(function (res) {
+            alert("댓글삭제가 완료되었습니다.");
+            location.href = `/auth/board/${boardId}`;
+        }).fail(function (err) {
+            alert(JSON.stringify(err));
+        });
+    },
+
+}
+replyIndex.init();
+
+var token = $("meta[name='_csrf']").attr("content");
+var header = $("meta[name='_csrf_header']").attr("content");
+$(document).ajaxSend(function(e, xhr, options) {
+    xhr.setRequestHeader(header, token);
+});
+```
+
+</details>  
+
+
+## 자동로그인(Remember Me)
+#login.html
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<head th:replace="layout/header :: header" />
+<body>
+
+		...
+
+            <div class="checkbox mb-3">
+                <input type="checkbox" name="remember-me" id="rememberMe">
+                <label for="rememberMe" aria-describedby="rememberMeHelp">로그인 유지</label>
+            </div>
+            <button class="w-100 btn btn-lg btn-primary" id="btn-login">로그인</button>
+        </form>
+		<br />
+		<div th:replace="layout/footer :: footer" />
+	</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script th:src="@{/js/user.js}"></script>
+</body>
+</html>
+```
+
+</details>  
+
+## SecurityConfig  
+```
+ http  	//자동로그인
+        .rememberMe().tokenValiditySeconds(60 * 60 * 7)
+        .userDetailsService(principalDetailService);
+```  
+tokenValiditySeconds : 쿠키를 얼마나 유지할 것인지 계산합니다. (7일 설정)  
+그 다음에 User 정보를 넣어주면 됩니다. principalDetailService  
+
+
+# 예외처리
+## CustomAccessDeniedHandler
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+public class CustomAccessDeniedHandler implements AccessDeniedHandler {
+	 
+    @Override
+    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException e) throws IOException, ServletException {
+        //스프링 시큐리티 로그인때 만든 객체
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        //현재 접속 url를 확인
+        UrlPathHelper urlPathHelper = new UrlPathHelper();
+        String originalURL = urlPathHelper.getOriginatingRequestUri(request);
+ 
+        //로직을 짜서 상황에 따라 보내줄 주소를 설정해주면 됨
+        response.sendRedirect("/error");
+    }
+}
+```
+
+</details>  
+
+## error.html
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/header :: header">
+<title>HelloSpringBoot</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+	<div class="container">
+		<div th:replace="layout/bodyHeader2 :: bodyHeader" />
+		<div class="jumbotron">
+			<h1>관리자만 들어갈수있습니다.</h1>
+			<button class="btn btn-secondary" onclick="history.back()">돌아가기</button>
+		</div>
+		<div th:replace="layout/footer :: footer" />
+	</div>
+</body>
+</html>
+```
+
+</details>  
 
 
 
