@@ -5,6 +5,12 @@
 4.[회원목록](#회원목록)  
 5.[게시판 CRUD](#게시판-CRUD)  
 
+조회수  
+검색  
+댓글  
+예외처리  
+자동로그인  
+
 
 0.[프로젝트 진행과정에서 궁금했던 점](#프로젝트-진행과정에서-궁금했던-점)  
 
@@ -14,14 +20,14 @@
 
 # DB 설정  
 **build.gradle**  
-```
+```Java
 dependencies {
 	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 }
 ```
 의존성 추가 
 **application.yml**  
-```
+```Java
 spring:
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
@@ -38,7 +44,7 @@ spring:
     properties:
       hibernate.format_sql: true
 ```
-**open-in-view** : 
+**open-in-view** : [참고](https://gracelove91.tistory.com/100)  
 **ddl-auto** : 프로젝트 실행 시에 자동으로 DDL(create, drop, alter 등)을 생성할 것인지를 결정하는 설정입니다. 주로 create와 update를 사용하는데 create는 프로젝트 실행 시 매번 테이블을 생성해주고, update는 변경이 필요한 경우 테이블을 수정해줍니다.  
 **use-new-id-generate-mappings** : JPA의 기본 numbering(넘버링) 전략을 사용할 것인지에 대한 설정입니다. 저는 Entity 클래스에서 따로 설정해줄 것이기 때문에 false로 했습니다.  
 **show-sql** : 프로젝트 실행 시 sql문을 로그로 보여줍니다.  
@@ -47,37 +53,64 @@ spring:
 # 시큐리티를 이용한 회원가입, 로그인
 ## User 테이블 생성
 **User**
-```
-@Getter
+<details> 
+<summary>접기/펼치기</summary> 
+	
+```Java
 @Builder
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class User {
-	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;  
-	
-	@Column(nullable = false)
-	private String username;
-	
-	@Column(nullable = false)
-	private String password;
-	
-	@Column(nullable = false)
-	private String email;
-	
-	@Column(nullable = false)
-	private String name;
-	
-	private String role;
+public class Board extends BaseTimeEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String title;
+
+    @Lob
+    private String content;
+
+    @Column(columnDefinition = "integer default 0", nullable = false)
+    private int count; //조회수
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "userId")
+    private User user;
+    
+    @OrderBy("id desc")
+    @JsonIgnoreProperties({"board"})
+    @OneToMany(mappedBy = "board", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    private List<Reply> replyList;
+    
+    @Column
+    private String useYn;
+    
+    //글 수정
+    public void update(String title, String content) {
+        this.title = title;
+        this.content = content;
+    }
+    
+    //글 삭제
+    public void delete(String useYn) {
+    	this.useYn = useYn;
+    }
+    
+}
 
 }
 ```
+</details>  
+
 **@NoArgsConstructor** : Lombok 어노테이션으로 빈 생성자를 만들어줍니다.  
-**@Entity** : 해당 클래스가 엔티티를 위한 클래스이며, 해당 클래스의 인스턴스들이 JPA로 관리되는 엔티티 객체라는 것을 의미합니다. 즉, 테이블을 의미합니다.  
-디폴트값으로 클래스의 카멜케이스 이름을 언더스코어 네이밍(_)으로 테이블 이름을 매칭합니다.  
+**@AllArgsConstructor** : 모든 필드 값을 파라미터로 받는 생성자를 만듦  
+**@Entity** : 해당 클래스가 엔티티를 위한 클래스이며, 해당 클래스의 인스턴스들이 JPA로 관리되는 엔티티 객체라는 것을 의미합니다. 즉, 테이블을 의미합니다.   
+디폴트값으로 클래스의 카멜케이스 이름을 언더스코어 네이밍(_)으로 테이블 이름을 매칭합니다.   
 **@Id** : 테이블의 Primary Key(PK)  
 **@GeneratedValue(strategy = GenerationType.IDENTITY)** : PK를 자동으로 생성하고자 할 때 사용합니다. 즉, auto_increment를 말합니다. 여기서는 JPA의 넘버링 전략이 아닌 이 전략을 사용합니다. (전에 application.yml 설정에서 use-new-id-generate-mappings: false로 한 것이 있습니다.)  
 오라클, mysql등 사용법이 다르고 mysql,mariaDB는 IDENTITY를 사용 하고 Auto는 자동으로 db랑 비교해서 넣어준다.  
@@ -85,154 +118,439 @@ public class User {
 **@Enumerated(EnumType.STRING)** : JPA로 DB에 저장할 때 Enum 값을 어떤 형태로 저장할지를 결정합니다.  
 기본적으로는 int로 저장하지만 int로 저장하면 무슨 의미인지 알 수가 없기 때문에 문자열로 저장될 수 있도록 설정합니다.  
 User 클래스 Setter가 없는 이유는 이 setter를 무작정 생성하게 되면 해당 클래스의 인스턴스가 언제 어디서 변해야하는지 코드상으로는 명확하게 알 수가 없어 나중에는 변경시에 매우 복잡해집니다.  
-**Builder**를 사용하는 이유는 어느 필드에 어떤 값을 채워야하는지 명확하게 알 수 있기 때문에 실수가 나지 않습니다.    
+**Builder**를 사용하는 이유는 어느 필드에 어떤 값을 채워야하는지 명확하게 알 수 있기 때문에 실수가 나지 않습니다.  
+
+```Java
+ //글 수정
+    public void update(String title, String content) {
+        this.title = title;
+        this.content = content;
+    }
+    //글 삭제
+    public void delete(String useYn) {
+    	this.useYn = useYn;
+    }
+```
+**더티 체킹(Dirty Checking)이란?**: [참고](https://interconnection.tistory.com/121)  
+
 
 ## Security 회원가입  
-**signup.html**
-```
+**signup.html**  
+<details>  
+<summary>더보기</summary>  
+	  
+```Java
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
 <head th:replace="layout/header :: header" />
 <body>
 	<div class="container">
 		<div th:replace="layout/bodyHeader :: bodyHeader" />
-		<form th:action="@{/signupJoin}" method="POST">
-		<div class="form-group">
-				<label>아이디</label> 
-				<input type="text" name="username" class="form-control" placeholder="아이디를 입력하세요" autocomplete="off" required>
-			</div>
-			<div class="form-group">
-				<label>패스워드</label> 
-				<input type="password" name="password" class="form-control" placeholder="패스워드를 입력하세요" autocomplete="off" required>
-			</div>
-			<div class="form-group">
-				<label>이메일</label> 
-				<input type="email" name="email" class="form-control" placeholder="이메일를 입력하세요" autocomplete="off" required>
-			</div>
-			<div class="form-group">
-				<label>이름</label> 
-				<input type="text" name="name" class="form-control" placeholder="이름을 입력하세요" autocomplete="off" required>
-			</div>
-			<button type="submit" class="btn btn-primary">회원가입</button>
-		</form>
+        <form id="needs-validation" novalidate>
+            <h1 class="h3 m-3 fw-normal ">회원가입</h1>
+            <div class="form-floating m-3">
+            <label for="username">아이디</label>
+                <input type="text" class="form-control" id="username" placeholder="아이디를 입력하세요." required
+                       minlength="2" size="20">
+                <div class="valid-feedback">
+                    good!
+                </div>
+                <div class="invalid-feedback">
+                    아이디는 4자 이상 입력해야 합니다.
+                </div>
+            </div>
+            <div class="form-floating m-3">
+            <label for="password">패스워드</label>
+                <input type="password" class="form-control" id="password" placeholder="패스워드를 입력하세요." required
+                       minlength="3" size="20">
+                <div class="valid-feedback">
+                    very good!
+                </div>
+                <div class="invalid-feedback">
+                    패스워드는 8자 이상 입력해야 합니다.
+                </div>
+            </div>
+            <div class="form-floating m-3">
+            <label for="email">이메일</label>
+                <input type="email" class="form-control" id="email" placeholder="이메일을 입력하세요." required>
+                <div class="valid-feedback">
+                    nice!
+                </div>
+                <div class="invalid-feedback">
+                    이메일 형식으로 입력해야 합니다.
+                </div>
+            </div>
+            <div class="form-floating m-3">
+            <label for="nickname">닉네임</label>
+                <input type="text" class="form-control" id="nickname" placeholder="닉네임을 입력하세요." required
+                       minlength="4" size="20">
+                <div class="valid-feedback">
+                    very nice!
+                </div>
+                <div class="invalid-feedback">
+                    닉네임은 4자 이상 입력해야 합니다.
+                </div>
+            </div>
+        </form>
+        <button class="w-100 btn btn-lg btn-primary" id="btn-save">회원가입</button>
 		<br />
 		<div th:replace="layout/footer :: footer" />
 	</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script th:src="@{/js/validation.js}"></script>
+<script th:src="@{/js/user.js}"></script>
 </body>
 </html>
+```  
+</details>  
+```Java
+<form **th:action**="@{/signupJoin}" method="POST">
 ```
-<form **th:action**="@{/signupJoin}" method="POST"> : th:action을 사용하면 csrf토큰이 자동으로 추가된다.  
+: th:action을 사용하면 csrf토큰이 자동으로 추가된다.  
 
-**UserRepository**  
+**user.js**  
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+'use strict';
+
+let index = {
+    init: function () {
+        $("#btn-save").on("click", () => { //this를 바인딩하기 위해 화샬표 함수 사용
+            let form = document.querySelector("#needs-validation");
+            if (form.checkValidity() == false) {
+                console.log("회원가입 안됨")
+            } else {
+                this.save();
+            }
+        });
+        $("#btn-update").on("click", () => {
+            let form = document.querySelector("#needs-validation");
+            if (form.checkValidity() == false) {
+                console.log("회원수정 안됨")
+            } else {
+                this.update();
+            }
+        });
+    },
+
+    save: function () {
+        let data = { 
+            username: $("#username").val(),
+            password: $("#password").val(),
+            email: $("#email").val(),
+            nickname: $("#nickname").val()
+        }
+
+        $.ajax({
+            type: "POST", //Http method
+            url: "/auth/api/v1/user", //API 주소
+            data: JSON.stringify(data), //JSON으로 변환
+            contentType: "application/json; charset=utf-8", //MIME 타입
+            dataType: "json" //응답 데이터
+        }).done(function (res) {
+            alert("회원가입이 완료되었습니다.");
+            location.href = "/auth/login";
+        }).fail(function (err) {
+            alert(JSON.stringify(err));
+        });
+    },
+
+    update: function () {
+        let data = {
+            id: $("#id").val(),
+            password: $("#password").val(),
+            nickname: $("#nickname").val()
+        }
+
+        $.ajax({
+            type: "PUT",
+            url: "/api/v1/user",
+            data: JSON.stringify(data),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json"
+        }).done(function (res) {
+            alert("회원수정이 완료되었습니다.");
+            location.href = "/";
+        }).fail(function (err) {
+            alert(JSON.stringify(err));
+        });
+    }
+}
+index.init();
+
+var token = $("meta[name='_csrf']").attr("content");
+var header = $("meta[name='_csrf_header']").attr("content");
+$(document).ajaxSend(function(e, xhr, options) {
+    xhr.setRequestHeader(header, token);
+});
 ```
-public interface UserRepository extends JpaRepository<User, Long>{
 	
+</details>  
+	
+**validation**  
+
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+'use strict';
+
+(function () {
+    window.addEventListener("load", function () {
+        let form = this.document.querySelector("#needs-validation");
+        let btnSave = this.document.querySelector("#btn-save");
+
+        btnSave.addEventListener("click", function (event) {
+            if (form.checkValidity() == false) {
+                event.preventDefault();
+                event.stopPropagation();
+                form.classList.add("was-validated");
+            }
+        }, false);
+    }, false);
+})();
+
+var token = $("meta[name='_csrf']").attr("content");
+var header = $("meta[name='_csrf_header']").attr("content");
+$(document).ajaxSend(function(e, xhr, options) {
+    xhr.setRequestHeader(header, token);
+});
+```
+
+</details>  
+
+**UserRepository** 
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+public interface UserRepository extends JpaRepository<User, Long> {
+
 	// findBy 규칙 -> UserId 문법
 	// ex) select * from user where userId = ?
-	public User findByUsername(String username);
-
+	Optional<User> findByUsername(String username);
+	
 }
 ```
+
+</details>  
+	
 CRUD 함수를 JPARepository가 들고 있고 @Repository라는 어노테이션이 없어도 loc됩니다. 이유는 JpaRepositori를 상속했기 때문에..  
+**Optional**: Java8에서는 Optional<T> 클래스를 사용해 NPE를 방지할 수 있도록 도와준다. Optional<T>는 null이 올 수 있는 값을 감싸는 Wrapper 클래스로, 참조하더라도 NPE가 발생하지 않도록 도와준다. Optional 클래스는 아래와 같은 value에 값을 저장하기 때문에 값이 null이더라도 바로 NPE가 발생하지 않으며, 클래스이기 때문에 각종 메소드를 제공해준다.
+[참고](https://mangkyu.tistory.com/70)
 
-**SecurityConfig**  
-```
-@Bean
-	public BCryptPasswordEncoder encoderpwd() {
-		return new BCryptPasswordEncoder();
+**UserService**  
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+@RequiredArgsConstructor
+@Service
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    //회원가입 로직
+    @Transactional
+    public Long save(User user) {
+        String hashPw = bCryptPasswordEncoder.encode(user.getPassword());
+        user.setPassword(hashPw);
+        
+        return userRepository.save(user).getId();
+    }
+    
+    //회원수정 로직
+    @Transactional
+    public Long update(User user, @AuthenticationPrincipal PrincipalDetail principalDetail) {
+        User userEntity = userRepository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("해당 회원이 없습니다. id=" + user.getId()));
+        userEntity.update(bCryptPasswordEncoder.encode(user.getPassword()), user.getNickname());
+        principalDetail.setUser(userEntity);
+        return userEntity.getId();
+    }
+    
+    //유저목록
+    public List<User> findUser(){
+		return userRepository.findAll();
 	}
+    
+}
 ```
-해당 메서드의 리턴되는 오브젝트를 loc로 등록해준다.
 
-**HomeController**  
-```
-@GetMapping("/signup")
-	public String signup() {
-		return "signup";
+</details>  
+**@RequiredArgsConstructor**: private final UserRepository userRepository : 생성자 주입을 받기 위해 @RequiredArgsConstructor 어노테이션을 썼습니다.  
+**@Transactional**: 로직이 실행하면서 예외가 생기면 자동으로 롤백해준다.
+	[참고](https://velog.io/@kdhyo/JavaTransactional-Annotation-%EC%95%8C%EA%B3%A0-%EC%93%B0%EC%9E%90-26her30h)  
+**@AuthenticationPrincipal**: 로그인한 사용자의 정보를 파라메터로 받고 싶을때 기존에는 다음과 같이 Principal 객체로 받아서 사용한다. [참고](https://ncucu.me/137)  
+
+**UserController**
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+@Controller
+public class UserController {
+	
+	@GetMapping("/")
+	public String index() {
+		return "index";
+	}
+
+	//회원가입 페이지 이동
+	@GetMapping("/auth/signup")
+    public String userSave() {
+        return "signup";
+    }
+	
+	//로그인 페이지 이동
+	@GetMapping("/auth/login")
+    public String userLogin() {
+        return "login";
+    }
+	
+	//메인페이지
+	@GetMapping("/auth/user/home")
+	public String home() {
+		return "layout/user/home";
 	}
 	
-	@PostMapping("/signupJoin")
-	public String signupJoin(User user) {
-		user.setRole("ROLE_USER");
-		String rawPassword = user.getPassword();
-		String encPassword = bCryptPasswordEncoder.encode(rawPassword);
-		user.setPassword(encPassword);
-		userRepository.save(user);
-		return "redirect:login";
-	}
+	//회원수정 페이지 이동
+    @GetMapping("/auth/user/update")
+    public String userUpdate() {
+        return "layout/user/update";
+    }
+	
+}
 ```
-**String rawPassword = user.getPassword();  
-String encPassword = bCryptPasswordEncoder.encode(rawPassword);  
-user.setPassword(encPassword); :** 암호화를 하기 위해서는 Spring-security에서 제공하는 BCryptPasswordEncoder 클래스를 이용합니다.  
-BCryptPasswordEncoder 클래스 객체를 생성하고 객체를 통해 encode() 메서드를 호출하여 비밀번호를 매개값으로 넣어준 뒤 인코딩합니다.  
-encode()메서드는 반환타입이 String이므로 String 타입의 변수에 저장합니다.  
 
-## Security 로그인  
-**SCRF 설정**  
-Cross-site request forgery의 약자로 타사이트에서 본인의 사이트로 form 데이터를 사용하여 공격하려고 할 때, 그걸 방지하기 위해 csrf 토큰 값을 사용하는 것이다.  
-타임리프 템플릿으로 form 생성시 타임리프, 스프링 MVC, 스프링 시큐리티가 조합이 되어 자동으로 csrf 토큰 기능을 지원해준다.
-[참고](https://wiken.io/ken/957)  
+</details>  
 
-**CORS**  
-Cross-Origin Resource Sharing,CORS의 약자로 다른 출처의 자원을 공유할 수 있도록 설정하는 권한 체제를 말합니다.
-[참고](https://valuefactory.tistory.com/1141)  
+**UserApiController**
+<details>   
+<summary>접기/펼치기</summary>  
 
-**login.html**  
+```Java
+@RequiredArgsConstructor
+@RestController
+public class UserApiController {
+
+    private final UserService userService;
+
+    //회원가입 API
+    @PostMapping("/auth/api/v1/user")
+    public Long save(@RequestBody UserSaveRequestDto userSaveRequestDto) {
+        return userService.save(userSaveRequestDto.toEntity());
+    }
+    
+    //회원 수정 API
+    @PutMapping("/api/v1/user")
+    public Long update(@RequestBody User user, @AuthenticationPrincipal PrincipalDetail principalDetail) {
+        userService.update(user, principalDetail);
+        return user.getId();
+    }
+    
+}
 ```
-<!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="layout/header :: header" />
-<body>
-	<div class="container">
-		<div th:replace="layout/bodyHeader :: bodyHeader" />
-		<form action="/login" method="POST">
-		<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-		<div class="form-group">
-				<label>아이디</label> 
-				<input type="text" name="username" class="form-control" placeholder="아이디를 입력하세요" autocomplete="off" required>
-			</div>
-			<div class="form-group">
-				<label>패스워드</label> 
-				<input type="password" name="password" class="form-control" placeholder="패스워드를 입력하세요" autocomplete="off" required>
-			</div>
-			<button type="submit" class="btn btn-primary">로그인</button>
-		</form>
-		<br />
-		<div th:replace="layout/footer :: footer" />
-	</div>
-</body>
-</html>
-```
-```<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />```: 이렇게 해줘도 토큰값을 받을 수 있다.  
 
-**SecurityConfig**  
+</details>  
+**@RestController**: @Controller에 @ResponseBody가 추가된 것입니다. 당연하게도 RestController의 주용도는 Json 형태로 객체 데이터를 반환하는 것입니다. 최근에 데이터를 응답으로 제공하는 REST API를 개발할 때 주로 사용하며 객체를 ResponseEntity로 감싸서 반환합니다. 이러한 이유로 동작 과정 역시 @Controller에 @ReponseBody를 붙인 것과 완벽히 동일합니다.
+[참고](https://mangkyu.tistory.com/49)
+	
+**UserSaveRequestDto**
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+@Builder
+@AllArgsConstructor
+@Getter
+@NoArgsConstructor
+public class UserSaveRequestDto {
+
+	private String username;
+    private String password;
+    private String email;
+    private String nickname;
+    private Role role;
+
+    public User toEntity() {
+        return User.builder()
+                .username(username)
+                .password(password)
+                .email(email)
+                .nickname(nickname)
+                .role(Role.USER)
+                .build();
+    }
+    
+}
 ```
+
+</details>  
+Entity 클래스는 DB와 매우 밀접한 관계이기 때문에 Request/Response할 때는 따로 Dto 클래스를 만들어주는 것이 좋습니다.  
+	
+
+**SecurityConfig** 
+	
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+@RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+	private final PrincipalDetailService principalDetailService;
 	
 	@Bean
-	public BCryptPasswordEncoder encoderpwd() {
-		return new BCryptPasswordEncoder();
-	}
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 	
 	@Override
-	public void configure(HttpSecurity http) throws Exception{
-		http.authorizeRequests()
-			.antMatchers("/index").authenticated()
-			.antMatchers("/user/home").access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
-			.antMatchers("/admin/userList").access("hasRole('ROLE_ADMIN')")
-			.anyRequest().permitAll()
-			.and()  
-			.formLogin()
-			.loginPage("/login")
-			.loginProcessingUrl("/login") 
-			.defaultSuccessUrl("/user/home");
-	}
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(principalDetailService).passwordEncoder(bCryptPasswordEncoder());
+    }
+	
+	@Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
+	
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                    .authorizeRequests()  //HttpServletRequest 요청 URL에 따라 접근 권한을 설정합니다. 
+                    .antMatchers("/index").permitAll()
+                    .antMatchers("/auth/user/**").access("hasRole('USER') or hasRole('ADMIN')")
+                    .antMatchers("/admin/userList").access("hasRole('ADMIN')")
+                    .antMatchers("/file-download/**").permitAll()  //파일 다운로드
+        			.antMatchers("/resource/**/images/**").permitAll()  // 이미지
+                .and()
+                    .formLogin()
+                    .loginPage("/auth/login")
+                    .loginProcessingUrl("/auth/api/v1/user/login")  //로그인 주소가 호출이 되면 시큐리티가 낚아채서 대신 로그인을 진행
+                    .defaultSuccessUrl("/auth/user/home")
+                .and()  //예외처리
+                    .exceptionHandling()
+                    .accessDeniedHandler(new CustomAccessDeniedHandler());
 
+        
+        http  		//자동로그인
+        			.rememberMe().tokenValiditySeconds(60 * 60 * 7)
+        			.userDetailsService(principalDetailService);
+    }
 }
-```  
+```
+
+</details>  
+  
 **@EnableWebSecurity**: 스프링 시큐리티 설정들을 활성화시킵니다.  
 **@Configuration**: 설정파일을 만들기 위한 애노테이션 or Bean을 등록하기 위한 애노테이션   
 **authorizeRequests()** : URL별 권환 관리를 설정하는 옵션  
@@ -244,200 +562,342 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 **loginProcessingUrl()** : 스프링 시큐리티가 해당 주소로 요청오는 로그인을 가로채서 대신 로그인해줍니다. (loginProcessingUrl는 잠시 주석처리해놓겠습니다. 지금 당장 사용하지 않을 겁니다.)  
 **defaultSuccessUrl()** : 로그인이 성공하면 해당 URL로 이동  
 
+	
 **PrincipalDetails**  
-```
-// 시큐리티가 /login 주소 요청이 오면 낚아채서 로그인을 진행 시킨다.
-// 로그인을 진행이 완료가 되면 시큐리티 session을 만들어줍니다.(Security ContextHolder)
-public class PrincipalDetails implements UserDetails {
-	
-	private User user;
-	
-	public PrincipalDetails(User user) {
-		this.user = user;
-	}
+<details>   
+<summary>접기/펼치기</summary>  
 
-	// 해당 User의 권한을 리턴하는 곳
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		Collection<GrantedAuthority> collect = new ArrayList<>();
-		collect.add(new GrantedAuthority() {
-			
-			@Override
-			public String getAuthority() {
-				return user.getRole();
-			}
-		});
-		return collect;
-	}
+```Java
+package com.example.demo.security;
 
-	@Override
-	public String getPassword() {
-		return user.getPassword();
-	}
+import java.util.ArrayList;
+import java.util.Collection;
 
-	@Override
-	public String getUsername() {
-		return user.getUsername();
-	}
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-	// 계정이 만료되었는지 (true: 만료되지 않음)
-	@Override
-	public boolean isAccountNonExpired() {
-		return true;
-	}
+import com.example.demo.domain.user.User;
 
-	
-	// 계정이 감겨있는지 
-	@Override
-	public boolean isAccountNonLocked() {
-		return true;
-	}
+import lombok.Getter;
 
-	// 패스워드가 만려되지 않았는지
-	@Override
-	public boolean isCredentialsNonExpired() {
-		return true;
-	}
+@Getter
+public class PrincipalDetail implements UserDetails {
 
-	
-	//계정이 활성화되어 있는지
-	@Override
-	public boolean isEnabled() {
-		return true;
-	}
+    private User user;
+    
+  //일반 사용자
+    public PrincipalDetail(User user) {
+        this.user = user;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        Collection<GrantedAuthority> collection = new ArrayList<>();
+        collection.add(() -> user.getRoleKey());
+
+        return collection;
+    }
+
+    //사용자 패스워드
+    @Override
+    public String getPassword() {
+        return user.getPassword();
+    }
+
+    //사용자 아이디
+    @Override
+    public String getUsername() {
+        return user.getUsername();
+    }
+    
+  //사용자 이메일
+    public String getEmail() {
+        return user.getEmail();
+    }
+
+    //사용자 닉네임
+    public String getNickname() {
+        return user.getNickname();
+    }
+
+    //사용자 pk
+    public Long getId() {
+        return user.getId();
+    }
+    
+    public void setUser(User user) {
+    	this.user = user;
+    }
+
+    //계정이 만료되었는지 (true: 만료되지 않음)
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    //계정이 잠겨있는지 (true: 잠겨있지 않음)
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    //패스워드가 만료되지 않았는지 (true: 만료되지 않음)
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    //계정이 활성화되어 있는지 (true: 활성화)
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }
 ```
+
+</details>  
+**UserDatails**: 객체를 상속받으면 스프링 시큐리티의 고유한 세션저장소에 저장을 할 수 있게 됩니다.
+
 
 **PrincipalDetalisService**  
-```
-// 시큐리티 설정에서 loginProcessingUrl("/login");
-// login 요청이 오면 자동으로 UserDatailisService 타입으로 loC 되어 있는 loadUserByUser 함수 실행
-@Service
-public class PrincipalDetalisService implements UserDetailsService {
-	
-	@Autowired
-	private UserRepository userRepository;
+<details>   
+<summary>접기/펼치기</summary>  
 
-	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		User userEntity = userRepository.findByUsername(username);
-		
-		if (userEntity == null) {
-			return null;
-		} else {
-			return new PrincipalDetails(userEntity);
-		}
-	}
+```Java
+@RequiredArgsConstructor
+@Service
+public class PrincipalDetailService implements UserDetailsService {
+
+    private final UserRepository userRepository;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User principal =  userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("해당 사용자를 찾을 수 없습니다. " + username));
+        return new PrincipalDetail(principal);
+    }
 }
 ```
-처음에 userId로 했는데 값이 들어가지 않아 오류가 났지만, username으로 변경하니 잘 작동되었다.  
+
+</details>  
+@Service로 Bean으로 등록합니다.  
+UserDetailsService를 상속받게 되면 오버라이딩을 해야하는데 이 메소드는 DB에 username이 있는지 확인하는 메소드입니다.  
+PrincipalDetail(principal)을 리턴을 하게 되면 시큐리티의 세션에 유저 정보가 저장됩니다.   
+처음에 userId로 했는데 값이 들어가지 않아 오류가 났지만, username으로 변경하니 잘 작동되었다.    
 정확한 이유는 모르겠지만 username으로 고정으로 사용해야 겠다.. 다음 또 시큐리티를 사용하게 되면 다시 시도 해봐야겠다.  
+
+	
+## Security 로그인  
+**SCRF 설정**  
+Cross-site request forgery의 약자로 타사이트에서 본인의 사이트로 form 데이터를 사용하여 공격하려고 할 때, 그걸 방지하기 위해 csrf 토큰 값을 사용하는 것이다.  
+타임리프 템플릿으로 form 생성시 타임리프, 스프링 MVC, 스프링 시큐리티가 조합이 되어 자동으로 csrf 토큰 기능을 지원해준다.
+[참고](https://wiken.io/ken/957)  
+
+**CORS**  
+Cross-Origin Resource Sharing,CORS의 약자로 다른 출처의 자원을 공유할 수 있도록 설정하는 권한 체제를 말합니다.
+[참고](https://valuefactory.tistory.com/1141)  
+
+**login.html**  
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<head th:replace="layout/header :: header" />
+<body>
+	<div class="container">
+		<div th:replace="layout/bodyHeader :: bodyHeader" />
+		<form action="/auth/api/v1/user/login" method="post">
+		<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <h1 class="h3 m-3 fw-normal">로그인</h1>
+            <div th:if="${param.error}" class="alert alert-danger" role="alert">
+                아이디 혹은 비밀번호가 잘못 입력되었습니다.
+            </div>
+            <div th:if="${param.logout}" class="alert alert-primary" role="alert">
+                로그아웃이 완료되었습니다.
+            </div>
+            <div class="form-floating m-3">
+            	<label for="username">아이디</label>
+                <input type="text" name="username" class="form-control" id="username" placeholder="아이디를 입력하세요." required>
+            </div>
+            <div class="form-floating m-3">
+           	 	<label for="password">패스워드</label>
+                <input type="password" name="password" class="form-control" id="password" placeholder="패스워드를 입력하세요." required>
+            </div>
+            <div class="checkbox mb-3">
+                <input type="checkbox" name="remember-me" id="rememberMe">
+                <label for="rememberMe" aria-describedby="rememberMeHelp">로그인 유지</label>
+            </div>
+            <button class="w-100 btn btn-lg btn-primary" id="btn-login">로그인</button>
+        </form>
+		<br />
+		<div th:replace="layout/footer :: footer" />
+	</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script th:src="@{/js/user.js}"></script>
+</body>
+</html>
+```
+
+</details>  
+
+```<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />```: 이렇게 해줘도 토큰값을 받을 수 있다.  
 
 # 회원목록
 **UserList**  
 ```
 http.authorizeRequests()  //권한 
-    .antMatchers("/admin/userList").access("hasRole('ROLE_ADMIN')");
+    .antMatchers("/admin/userList").access("hasRole('ADMIN')");
 ```
 시큐리티에 ADMIN 만 볼 수 있게 주소를 설정
 
-```
-<!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org">
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+<!doctype html>
+<html lang="en" class="h-100" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
 <head th:replace="layout/header :: header" />
-<body>
-	<div class="container">
-		<div th:replace="layout/bodyHeader2 :: bodyHeader" />
-		<div>
-			<table class="table table-striped">
-				<thead>
-					<tr>
-						<th>#</th>
-						<th>아이디</th>
-						<th>패스워드</th>
-						<th>이메일</th>
-						<th>이름</th>
-						<th>가입날짜</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr th:each="user : ${user}">
-						<td th:text="${user.id}"></td>
-						<td th:text="${user.username}"></td>
-						<td th:text="${user.password}"></td>
-						<td th:text="${user.email}"></td>
-						<td th:text="${user.name}"></td>
-						<td th:text="${user.createDate}"></td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-		<div th:replace="layout/footer :: footer" />
-	</div>
+<body class="text-center d-flex flex-column h-100">
+<div th:replace="layout/bodyHeader2 :: bodyHeader" />
+<main class="form-signin">
+    <div class="container border rounded flex-md-row mb-4 shadow-sm h-md-250">
+        <form id="needs-validation" novalidate>
+            <h1 class="h3 m-3 fw-normal">회원정보수정</h1>
+            <input type="hidden" id="id" th:value="${#authentication.principal.id}">
+            <div class="form-floating m-3">
+            	<label for="username">아이디</label>
+                <input type="text" th:value="${#authentication.principal.username}" class="form-control" id="username" placeholder="아이디를 입력하세요." required
+                       minlength="4" size="20" readonly>
+                <div class="valid-feedback">
+                    good!
+                </div>
+                <div class="invalid-feedback">
+                    아이디는 4자 이상 입력해야 합니다.
+                </div>
+            </div>
+
+            <div class="form-floating m-3">
+            <label for="password">패스워드</label>
+                <input type="password" class="form-control" id="password" placeholder="패스워드를 입력하세요." required minlength="8" size="20">
+                <div class="valid-feedback" >
+                    very good!
+                </div>
+                <div class="invalid-feedback">
+                    패스워드는 8자 이상 입력해야 합니다.
+                </div>
+            </div>
+            <div class="form-floating m-3">
+            <label for="email">이메일</label>
+                <input type="email" th:value="${#authentication.principal.email}" class="form-control" id="email" placeholder="이메일을 입력하세요." required>
+                <div class="valid-feedback">
+                    nice!
+                </div>
+                <div class="invalid-feedback">
+                    이메일 형식으로 입력해야 합니다.
+                </div>
+            </div>
+            <div class="form-floating m-3">
+            <label for="nickname">닉네임</label>
+                <input type="text" th:value="${#authentication.principal.nickname}" class="form-control" id="nickname" placeholder="닉네임을 입력하세요." required
+                       minlength="2" size="20">
+                <div class="valid-feedback">
+                    very nice!
+                </div>
+                <div class="invalid-feedback">
+                    닉네임은 2자 이상 입력해야 합니다.
+                </div>
+            </div>
+        </form>
+        <button class="w-100 btn btn-lg btn-primary" id="btn-update">회원수정</button>
+    </div>
+</main>
+
+<div th:replace="layout/footer :: footer" />
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script th:src="@{/js/validation-update.js}"></script>
+<script th:src="@{/js/user.js}"></script>
 </body>
+
 </html>
 ```
+
+</details>  
+
 th:each 문법을 사용하여 회원정보를 출력
 
 **AdminController**  
 ```
-@GetMapping(value = "/admin/userList")
+@GetMapping("/admin/userList")
 	public String userList(Model model) {
 		List<User> user = userService.findUser();
 		model.addAttribute("user", user);
-		return "admin/userList";
+		return "user/admin/userList";
 	}
 ```
 JpaRepository에 기본으로 재공하는 findAll() 사용하여 회원 정보를 가져옴.
 
 # 게시판 CRUD  
 ## Board 테이블 생성
-```
-@Entity
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+@Builder
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Board {
-	
-	@Id
-	@GeneratedValue
-	private Long idb;
-	
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "id")
-	private User user;
-	
-//	@OneToMany(mappedBy = "board")
-//	private List<Reply> comment = new ArrayList<>();
-	
-	@Column(nullable = false)
-	private String title;
-	
-	@Lob
-	private String content;
-	
-	@Column(nullable = false)
-	private String writer;
-	
-	@Column(columnDefinition = "integer default 0", nullable = false)
-	private int count;
-	
-	@CreationTimestamp
-	@Column(updatable = false)
-	private Timestamp createDate;
-	
-	@UpdateTimestamp
-	private Timestamp updateDate;
-	
-	@Builder
-	public Board(Long idb, String title, String content, String writer, User user) {
-		this.idb = idb;
-		this.writer = writer;
-		this.title = title;
-		this.content = content;
-		this.user = user;
-	}
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+public class Board extends BaseTimeEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String title;
+
+    @Lob
+    private String content;
+
+    @Column(columnDefinition = "integer default 0", nullable = false)
+    private int count; //조회수
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "userId")
+    private User user;
+    
+    @OrderBy("id desc")
+    @JsonIgnoreProperties({"board"})
+    @OneToMany(mappedBy = "board", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    private List<Reply> replyList;
+    
+    @Column
+    private String useYn;
+    
+    //글 수정
+    public void update(String title, String content) {
+        this.title = title;
+        this.content = content;
+    }
+    
+    //글 삭제
+    public void delete(String useYn) {
+    	this.useYn = useYn;
+    }
+    
 }
 ```
+
+</details>  
+
 **@NoArgsConstructor(access = AccessLevel.PROTECTED):** Entity나 DTO를 사용할때 많이 사용하는 편입니다.  
 기본 생성자의 접근 제어를 PROTECTED로 설정해놓게 되면 무분별한 객체 생성에 대해 한번 더 체크할 수 있는 수단이 되기 때문입니다.
 [참조](https://cobbybb.tistory.com/14)  
@@ -445,69 +905,256 @@ public class Board {
 [참조](https://velog.io/@koo8624/Spring-CreationTimestamp-UpdateTimestamp)  
 **@UpdateTimestamp:** UPDATE 쿼리가 발생할 때, 현재 시간을 값으로 채워서 쿼리를 생성한다. @UpdateTimestamp 어노테이션을 사용하면 수정이 발생할 때마다 마지막 수정시간을 업데이트 해주어야 하는 데이터에 유용하게 활용될 수 있다.  
 **@Builder:** [참조](https://mangkyu.tistory.com/163)  
-
-**BoardDto**
+**BaseTimeEntity** :  JPA Auditing으로 생성시간/수정시간 자동화   
+사실 테이블을 만들때 필요한 컬럼은 생성시간과 수정입니다. 언제 데이터가 들어갔는지 이런 시간이 중요합니다.  
+Entity 클래스마다 따로 날짜 필드를 생성하지 않아도 자동으로 생성하도록 하겠습니다.  
+클래스는 모든 Entity의 상위클래스가 되어 Entity들의 날짜 필드를 자동으로 관리합니다.  
 ```
 @Getter
+@MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
+public abstract class BaseTimeEntity {
+
+    @CreatedDate //생성할 때 자동저장
+    private LocalDateTime createdDate;
+
+    @LastModifiedDate //수정할 때 자동저장
+    private LocalDateTime modifiedDate;
+}
+
+```  
+**@MappedSuperclass** : JPA Entity 클래스들이 BaseTimeEntity를 상속할 경우 날짜 필드도 칼럼으로 인식  
+
+**JpaConfig**
+```
+@Configuration
+@EnableJpaAuditing
+public class JpaConfig {
+}
+
+```
+**@EnableJpaAuditing** : JPA Auditing 활성화[참고](https://webcoding-start.tistory.com/53)  
+**@Configuration**: 설정파일을 만들기 위한 애노테이션 or Bean을 등록하기 위한 애노테이션이다.
+
+
+
+**BoardSaveRequestDto**
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+@Builder
+@Getter
 @Setter
-@ToString
+@AllArgsConstructor
 @NoArgsConstructor
-public class BoardDto {
+public class BoardSaveRequestDto {
 
-	 	private Long idb;
-	    private String writer;
-	    private String title;
-	    private String content;
-	    private User user;
-	    private Timestamp createDate;
-	    private Timestamp updateDate;
+	private Long id;
+    private String title;
+    private String content;
+    private int count;
+    private User user;
+    private String useYn;
+    
+    private int attachCount;
+    private String fileIdxs;
+    private String deleteFileIdxs;
 
-	    public Board toEntity(){
-	        Board boardEntity = Board.builder()
-	                .idb(idb)
-	                .writer(writer)
-	                .title(title)
-	                .content(content)
-	                .user(user)
-	                .build();
-	        return boardEntity;
-	    }
+    public Board toEntity() {
+        return Board.builder()
+                .title(title)
+                .content(content)
+                .count(0)
+                .user(user)
+                .useYn(useYn)
+                .build();
+    }
 
-	    @Builder
-	    public BoardDto(Long idb, String title, String content, String writer, User user, Timestamp createDate, Timestamp updateDate) {
-	        this.idb = idb;
-	        this.writer = writer;
-	        this.title = title;
-	        this.content = content;
-	        this.createDate = createDate;
-	        this.updateDate = updateDate;
-	        this.user = user;
-	    }
+    public void setUser(User user) {
+        this.user = user;
+    }
 }
 ```
+
+</details>  
+
+
+**BoardDeleteRequestDto**  
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+@Getter
+@Setter
+@NoArgsConstructor
+@ToString
+public class BoardDeleteRequestDto {
+	private Long id;
+	private String useYn;
+	
+	public Board toEntity() {
+		return Board.builder()
+			.useYn(useYn)
+			.build();
+	}
+}
+
+```
+
+</details>  
+
+
+**BoardUpdateRequestDto**  
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+public class BoardUpdateRequestDto {
+
+    private String title;
+    private String content;
+}
+
+```
+
+</details>  
+
+
+**BoardRequestDto**  
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+@Getter
+@Setter
+@NoArgsConstructor
+@ToString
+public class BoardRequestDto {
+	private Long id;
+	private String title;
+	private String content;
+	private String useYn;
+	
+	public Board toEntity() {
+		return Board.builder()
+			.title(title)
+			.content(content)
+			.useYn(useYn)
+			.build();
+	}
+}
+```
+
+</details>  
+
 
 ## BoarRepository, BoardService, BoardController
 **BoardRepository**  
-```
-public interface BoardRepository extends JpaRepository<Board, Long> {
+<details>   
+<summary>접기/펼치기</summary>  
 
+```Java
+public interface BoardRepository extends JpaRepository<Board, Long> {
+	
+	//조회수 증가 쿼리
 	@Modifying
-	@Query("update Board p set p.count = p.count + 1 where p.idb = ?1")
-	int updateCount(Long idb);
-	
-	//검색 조건 Like문 실행
-	Page<Board> findByTitleContainingOrContentContaining(String title, String content, Pageable pageable);
-	
+    @Query("update Board p set p.count = p.count + 1 where p.id = :id")
+    int updateCount(@Param("id") Long id);
+    
+	Page<Board> findByUseYn(String useYn, Pageable pageable);
+
+	Page<Board> findByTitleContainingAndUseYnIgnoreCase(String keyword, String useYn, Pageable pageable);
+
+	Page<Board> findByContentContainingAndUseYnIgnoreCase(String keyword, String useYn, Pageable pageable);
 }
 ```
+
+</details>  
+findBy <- 꼭 들어가야하는 코드  
+Content <- 변수  
+Containing <- %like% 문  
+And  
+UseYn <-변수  
+IgnoreCase <- 대소문자 관계 없이 검색하는 쿼리
+[참고](https://recordsoflife.tistory.com/59)  
 **JpaRepository**: JPA가 기본적으로 제공하는 메서드를 사용 할 수 있다.  
 **Modifying**: @Query 어노테이션을 통해 작성된 INSERT, UPDATE, DELETE(SELECT 제외) 쿼리에서 사용되는 어노테이션 이고 기본적으로 JpaRepository에서 제공하는 메서드 혹은 메서드 네이밍으로 만들어진 쿼리에는 적용되지 않습니다.  
 **Query**: SQL과 유사한 JPQL (Java Persistence Query Language) 라는 객체지향 쿼리 언어를 통해 복잡한 쿼리 처리를 지원  
 
 **BoardService**
+<details>   
+<summary>접기/펼치기</summary>  
+
+```Java
+@RequiredArgsConstructor
+@Service
+public class BoardService {
+
+    private final BoardRepository boardRepository;
+
+    //글작성 로직
+    @Transactional
+    public Long save(BoardSaveRequestDto boardSaveRequestDto, User user) {
+        boardSaveRequestDto.setUser(user);
+        return boardRepository.save(boardSaveRequestDto.toEntity()).getId();
+    }
+    
+    //글목록 로직
+    @Transactional(readOnly = true)
+	public Page<Board> selectList(Pageable pageable, String select, String keyword) {
+		
+		String useYn = "Y";
+		
+		if(select.equals("title")) {
+			return boardRepository.findByTitleContainingAndUseYnIgnoreCase(keyword, useYn, pageable);
+		} else if(select.equals("content")) {
+			return boardRepository.findByContentContainingAndUseYnIgnoreCase(keyword, useYn, pageable);
+		} else {
+			return boardRepository.findByUseYn(useYn, pageable);
+		}
+		
+	}
+    
+    //글상세 로직
+    @Transactional(readOnly = true)
+    public Board detail(Long id) {
+        return boardRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 id가 없습니다. id=" + id));
+    }
+    
+    //글삭제 로직
+    @Transactional
+    public Long delete(Long id, BoardDeleteRequestDto boardDeleteRequestDto) {
+    	Board board = boardRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 id가 없습니다." + id));
+    	board.delete(boardDeleteRequestDto.getUseYn());
+        return id;
+    }
+
+    //글수정 로직
+   @Transactional
+   public Long update(Long id, BoardUpdateRequestDto boardUpdateRequestDto) {
+       Board board = boardRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 id가 없습니다. id=" + id));
+       board.update(boardUpdateRequestDto.getTitle(), boardUpdateRequestDto.getContent());
+       return id;
+   }
+    
+   //글 조회수 로직
+   @Transactional
+   public int updateCount(Long id) {
+       return boardRepository.updateCount(id);
+   }
+   
+}
 ```
 
-```
+</details>  
+
+
+
 
 
 
