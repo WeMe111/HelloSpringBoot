@@ -17,19 +17,8 @@
             <label for="content">내용</label>
                 <textarea class="form-control" rows="5" id="content" style="height: 450px;"></textarea>
             </div>
-            
-            <div >
-			    <img th:each="imageFile : ${board.imageFiles}"
-			         th:if="${imageFile.attachmentType == T(register.demo.domain.file.AttachmentType).IMAGE}"
-			         th:src="@{/main/board/images/{imageFile}(imageFile=${imageFile.storeFilename})}" width="300" height="300" style="margin-right: 5px"/>
-			</div>
-			<div>
-			    <a th:each="generalFile : ${board.generalFiles}"
-			       th:if="${generalFile.attachmentType == T(register.demo.domain.file.AttachmentType).GENERAL}"
-			       th:href="@{/main/board/attaches/{generalFile}(generalFile=${generalFile.storeFilename}, originName=${generalFile.originFilename})}"
-			       th:text="${generalFile.originFilename}" style="margin-right: 5px"/><br/>
-			</div>
-            
+            </form>
+        	<button class="w-100 btn btn-lg btn-primary" id="btn-save" style="max-width: 250px; margin-left: 220px;">작성완료</button>
 		<div th:replace="layout/footer :: footer" />
 	</div>
 	<script th:src="@{/js/board.js}"></script>
