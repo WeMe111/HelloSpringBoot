@@ -217,8 +217,11 @@ User 클래스 Setter가 없는 이유는 이 setter를 무작정 생성하게 �
 </html>
 ```  
 </details>  
-```Java
+```
 <form **th:action**="@{/signupJoin}" method="POST">
+```
+```
+<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />	
 ```
 : th:action을 사용하면 csrf토큰이 자동으로 추가된다.  
 
