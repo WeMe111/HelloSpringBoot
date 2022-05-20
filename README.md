@@ -27,16 +27,24 @@
 5. 아이디/ 패스워드 찾기 
 
 # 프로젝트 생성
+<details>   
+<summary>접기/펼치기</summary>  
+
 ![프로젝트 생성1](https://user-images.githubusercontent.com/94879395/165679231-659fa912-256e-4feb-8445-a8ba387edee7.PNG)  
-![image](https://user-images.githubusercontent.com/94879395/165679347-25ca6249-873a-4b38-88fd-2779bfbba8ff.png)
+![image](https://user-images.githubusercontent.com/94879395/165679347-25ca6249-873a-4b38-88fd-2779bfbba8ff.png)  
+</details>  
 
 # DB 설정  
+<details>   
+<summary>접기/펼치기</summary>  
+	
 **build.gradle**  
 ```Java
 dependencies {
 	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 }
 ```
+
 의존성 추가 
 **application.yml**  
 ```Java
@@ -61,13 +69,15 @@ spring:
 **use-new-id-generate-mappings** : JPA의 기본 numbering(넘버링) 전략을 사용할 것인지에 대한 설정입니다. 저는 Entity 클래스에서 따로 설정해줄 것이기 때문에 false로 했습니다.  
 **show-sql** : 프로젝트 실행 시 sql문을 로그로 보여줍니다.  
 **hibernate.format_sql** : sql을 포맷팅해서 좀 더 예쁘게 sql문을 로그로 보여줍니다.  
+	
+</details>  
  
 # 시큐리티를 이용한 회원가입, 로그인
 ## User 테이블 생성
-**User**
 <details> 
 <summary>접기/펼치기</summary> 
 	
+**User.class**
 ```Java
 @Builder
 @Getter
@@ -117,8 +127,7 @@ public class Board extends BaseTimeEntity {
 
 }
 ```
-</details>  
-
+	
 **@NoArgsConstructor** : Lombok 어노테이션으로 빈 생성자를 만들어줍니다.  
 **@AllArgsConstructor** : 모든 필드 값을 파라미터로 받는 생성자를 만듦  
 **@Entity** : 해당 클래스가 엔티티를 위한 클래스이며, 해당 클래스의 인스턴스들이 JPA로 관리되는 엔티티 객체라는 것을 의미합니다. 즉, 테이블을 의미합니다.   
@@ -131,7 +140,7 @@ public class Board extends BaseTimeEntity {
 기본적으로는 int로 저장하지만 int로 저장하면 무슨 의미인지 알 수가 없기 때문에 문자열로 저장될 수 있도록 설정합니다.  
 User 클래스 Setter가 없는 이유는 이 setter를 무작정 생성하게 되면 해당 클래스의 인스턴스가 언제 어디서 변해야하는지 코드상으로는 명확하게 알 수가 없어 나중에는 변경시에 매우 복잡해집니다.  
 **Builder**를 사용하는 이유는 어느 필드에 어떤 값을 채워야하는지 명확하게 알 수 있기 때문에 실수가 나지 않습니다.  
-
+	
 ```Java
  //글 수정
     public void update(String title, String content) {
@@ -144,13 +153,15 @@ User 클래스 Setter가 없는 이유는 이 setter를 무작정 생성하게 �
     }
 ```
 **더티 체킹(Dirty Checking)이란?**: [참고](https://interconnection.tistory.com/121)  
+	
+</details>  
 
 
-## Security 회원가입  
-**signup.html**  
+## Security 회원가입    
 <details>  
-<summary>더보기</summary>  
+<summary>접기/펼치기</summary>  
 	  
+**signup.html**
 ```Java
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
@@ -216,19 +227,16 @@ User 클래스 Setter가 없는 이유는 이 setter를 무작정 생성하게 �
 </body>
 </html>
 ```  
-</details>  
 ```
 <form **th:action**="@{/signupJoin}" method="POST">
 ```
+: th:action을 사용하면 csrf토큰이 자동으로 추가된다. 
 ```
 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />	
 ```
-: th:action을 사용하면 csrf토큰이 자동으로 추가된다.  
-
+: 이런 식으로 넣어도 작동 한다.
+	
 **user.js**  
-<details>   
-<summary>접기/펼치기</summary>  
-
 ```Java
 'use strict';
 
@@ -304,12 +312,7 @@ $(document).ajaxSend(function(e, xhr, options) {
 });
 ```
 	
-</details>  
-	
-**validation**  
-
-<details>   
-<summary>접기/펼치기</summary>  
+**validation.js**    
 
 ```Java
 'use strict';
@@ -336,12 +339,7 @@ $(document).ajaxSend(function(e, xhr, options) {
 });
 ```
 
-</details>  
-
 **UserRepository** 
-<details>   
-<summary>접기/펼치기</summary>  
-
 ```Java
 public interface UserRepository extends JpaRepository<User, Long> {
 
@@ -351,17 +349,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	
 }
 ```
-
-</details>  
-	
 CRUD 함수를 JPARepository가 들고 있고 @Repository라는 어노테이션이 없어도 loc됩니다. 이유는 JpaRepositori를 상속했기 때문에..  
 **Optional**: Java8에서는 Optional<T> 클래스를 사용해 NPE를 방지할 수 있도록 도와준다. Optional<T>는 null이 올 수 있는 값을 감싸는 Wrapper 클래스로, 참조하더라도 NPE가 발생하지 않도록 도와준다. Optional 클래스는 아래와 같은 value에 값을 저장하기 때문에 값이 null이더라도 바로 NPE가 발생하지 않으며, 클래스이기 때문에 각종 메소드를 제공해준다.
-[참고](https://mangkyu.tistory.com/70)
+[참고](https://mangkyu.tistory.com/70)  
 
-**UserService**  
-<details>   
-<summary>접기/펼치기</summary>  
-
+**UserService.class**
 ```Java
 @RequiredArgsConstructor
 @Service
@@ -395,17 +387,12 @@ public class UserService {
     
 }
 ```
-
-</details>  
 **@RequiredArgsConstructor**: private final UserRepository userRepository : 생성자 주입을 받기 위해 @RequiredArgsConstructor 어노테이션을 썼습니다.  
 **@Transactional**: 로직이 실행하면서 예외가 생기면 자동으로 롤백해준다.
-	[참고](https://velog.io/@kdhyo/JavaTransactional-Annotation-%EC%95%8C%EA%B3%A0-%EC%93%B0%EC%9E%90-26her30h)  
+[참고](https://velog.io/@kdhyo/JavaTransactional-Annotation-%EC%95%8C%EA%B3%A0-%EC%93%B0%EC%9E%90-26her30h)  
 **@AuthenticationPrincipal**: 로그인한 사용자의 정보를 파라메터로 받고 싶을때 기존에는 다음과 같이 Principal 객체로 받아서 사용한다. [참고](https://ncucu.me/137)  
-
-**UserController**
-<details>   
-<summary>접기/펼치기</summary>  
-
+	
+**UserController.class**
 ```Java
 @Controller
 public class UserController {
@@ -441,9 +428,7 @@ public class UserController {
 	
 }
 ```
-
-</details>  
-
+	
 **UserApiController**
 <details>   
 <summary>접기/펼치기</summary>  
@@ -476,9 +461,6 @@ public class UserApiController {
 [참고](https://mangkyu.tistory.com/49)
 	
 **UserSaveRequestDto**
-<details>   
-<summary>접기/펼치기</summary>  
-
 ```Java
 @Builder
 @AllArgsConstructor
@@ -505,14 +487,9 @@ public class UserSaveRequestDto {
 }
 ```
 
-</details>  
 Entity 클래스는 DB와 매우 밀접한 관계이기 때문에 Request/Response할 때는 따로 Dto 클래스를 만들어주는 것이 좋습니다.  
 	
-
-**SecurityConfig** 
-	
-<details>   
-<summary>접기/펼치기</summary>  
+**SecurityConfig**   
 
 ```Java
 @RequiredArgsConstructor
@@ -563,8 +540,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 }
 ```
-
-</details>  
   
 **@EnableWebSecurity**: 스프링 시큐리티 설정들을 활성화시킵니다.  
 **@Configuration**: 설정파일을 만들기 위한 애노테이션 or Bean을 등록하기 위한 애노테이션   
@@ -579,8 +554,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 	
 **PrincipalDetails**  
-<details>   
-<summary>접기/펼치기</summary>  
 
 ```Java
 package com.example.demo.security;
@@ -669,15 +642,10 @@ public class PrincipalDetail implements UserDetails {
     }
 }
 ```
-
-</details>  
 **UserDatails**: 객체를 상속받으면 스프링 시큐리티의 고유한 세션저장소에 저장을 할 수 있게 됩니다.
 
 
 **PrincipalDetalisService**  
-<details>   
-<summary>접기/펼치기</summary>  
-
 ```Java
 @RequiredArgsConstructor
 @Service
@@ -692,15 +660,14 @@ public class PrincipalDetailService implements UserDetailsService {
     }
 }
 ```
-
-</details>  
 @Service로 Bean으로 등록합니다.  
 UserDetailsService를 상속받게 되면 오버라이딩을 해야하는데 이 메소드는 DB에 username이 있는지 확인하는 메소드입니다.  
 PrincipalDetail(principal)을 리턴을 하게 되면 시큐리티의 세션에 유저 정보가 저장됩니다.   
 처음에 userId로 했는데 값이 들어가지 않아 오류가 났지만, username으로 변경하니 잘 작동되었다.    
 정확한 이유는 모르겠지만 username으로 고정으로 사용해야 겠다.. 다음 또 시큐리티를 사용하게 되면 다시 시도 해봐야겠다.  
 
-	
+</details>
+
 ## Security 로그인  
 **SCRF 설정**  
 Cross-site request forgery의 약자로 타사이트에서 본인의 사이트로 form 데이터를 사용하여 공격하려고 할 때, 그걸 방지하기 위해 csrf 토큰 값을 사용하는 것이다.  
@@ -758,7 +725,11 @@ Cross-Origin Resource Sharing,CORS의 약자로 다른 출처의 자원을 공�
 
 </details>  
 
-```<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />```: 이렇게 해줘도 토큰값을 받을 수 있다.  
+```<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />```: 이렇게 해줘도 토큰값을 받을 수 있다.
+</details>    
+	
+
+  
 
 # 회원목록
 **UserList**  
