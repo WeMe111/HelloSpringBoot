@@ -2027,7 +2027,282 @@ Board를 조회할 때 Reply를 조회하게 되고 Reply를 조회하면 Board,
 </details>  
 
 ## 댓글 작성
+<details>   
+<summary>접기/펼치기</summary>  
+
+
+<details>   
+<summary>detail.html</summary>  
+
+```Java
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<head th:replace="layout/header :: header" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<body>
+    <div class="card mb-2 mt-5">
+
+        <div class="card-header bg-light">
+            <i class="fa fa-comment fa"></i> 댓글
+        </div>
+        <form>
+            <div class="card-body">
+                <input type="hidden" id="boardId" th:value="${board.id}">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <textarea class="form-control" id="reply-content" rows="1"></textarea>
+                        <button id="reply-btn-save" type="button" class="btn btn-primary mt-3">등록</button>
+                    </li>
+                </ul>
+            </div>
+        </form>
+    </div>
+    <br/>
+    <div class="card">
+        <div class="card-header">댓글</div>
+        <ul id="reply--box" class="list-group" th:each="reply : ${board.replyList}">
+            <li th:id="'reply--' + ${reply.id}" class="list-group-item d-flex justify-content-between">
+                <div th:text="${reply.content}"></div>
+                <div class="d-flex" >
+                    <span class="text-monospace">작성자: &nbsp;</span><div class="text-monospace" th:text="${reply.user.username}"></div>
+                    <span th:if="${reply.user.id == #authentication.principal.id}">
+                        <button th:onclick="|replyIndex.replyDelete('${board.id}', '${reply.id}')|" class="badge btn-danger" style="margin-left: 10px;">삭제</button>
+                    </span>
+                </div>
+            </li>
+        </ul>
+    </div>
+</main>
+		<div th:replace="layout/footer :: footer" />
+	</div>
+<script th:src="@{/js/board.js}"></script>
+<script th:src="@{/js/reply.js}"></script>
+</body>
+</html>
+```
+
+**reply.js**
+```Java
+'board strict';
+
+let replyIndex = {
+    init: function () {
+        $("#reply-btn-save").on("click", () => {
+            this.replySave();
+        });
+    },
+
+    replySave: function () {
+        let data = {
+            content: $("#reply-content").val(),
+        }
+        let boardId = $("#boardId").val();
+        console.log(data);
+        console.log(boardId);
+        $.ajax({
+            type: "POST",
+            url: `/api/v1/board/${boardId}/reply`,
+            data: JSON.stringify(data),
+            contentType: "application/json; charset=utf-8",
+            dataType: "text"
+        }).done(function (res) {
+            alert("댓글작성이 완료되었습니다.");
+            location.href = `/auth/board/${boardId}`;
+        }).fail(function (err) {
+            alert(JSON.stringify(err));
+        });
+    },
+
+    replyDelete: function (boardId, replyId) {
+        $.ajax({
+            type: "DELETE",
+            url: `/api/v1/board/${boardId}/reply/${replyId}`,
+            dataType: "text"
+        }).done(function (res) {
+            alert("댓글삭제가 완료되었습니다.");
+            location.href = `/auth/board/${boardId}`;
+        }).fail(function (err) {
+            alert(JSON.stringify(err));
+        });
+    },
+
+}
+replyIndex.init();
+
+var token = $("meta[name='_csrf']").attr("content");
+var header = $("meta[name='_csrf_header']").attr("content");
+$(document).ajaxSend(function(e, xhr, options) {
+    xhr.setRequestHeader(header, token);
+});
+```
+</details>  
+
+**ReplyApiController**
+```Java
+private final ReplyService replyService;
+
+//댓글저장
+    @PostMapping("/api/v1/board/{boardId}/reply")
+    public void save(@PathVariable Long boardId,
+                     @RequestBody Reply reply,
+                     @AuthenticationPrincipal PrincipalDetail principalDetail) {
+        replyService.replySave(boardId, reply, principalDetail.getUser());
+    }
+```
+User 정보는 @AuthenticationPrincipal, boardId는 @PathVariable 통해서, Reply는 JSON으로 보내줍니다.  
+
+**ReplyService**
+```Java
+private final ReplyRepository replyRepository;
+    private final BoardRepository boardRepository;
+
+    @Transactional
+    public void replySave(Long boardId, Reply reply, User user) {
+        Board board = boardRepository.findById(boardId).orElseThrow(() -> new IllegalArgumentException("해당 boardId가 없습니다. id=" + boardId));
+
+        reply.save(board, user);
+
+        replyRepository.save(reply);
+    }
+```
+댓글을 저장할 때는 Board의 Id 값을 가져와야 합니다. 그래서 Board를 영속화시켜서 Board와 User를 저장합니다.  
+
+**Reply**
+```Java
+ public void save(Board board, User user) {
+        this.board = board;
+        this.user = user;
+    }
+```
+</details>  
+
+## 게시글 삭제 에러
+<details>   
+<summary>접기/펼치기</summary>  
+
+이 상태에서 게시글을 삭제하는데 에러가 발생합니다.  
+왜냐하면 댓글에 외래키로 잡혀서 있어서 삭제가 안되는데 옵션을 주면 됩니다.  
+**Board**
+```Java
+@OrderBy("id desc")
+    @JsonIgnoreProperties({"board"})
+    @OneToMany(mappedBy = "board", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    private List<Reply> replyList;
+```
+</details>  
+
+## 댓글 삭제
+<details>   
+<summary>접기/펼치기</summary>  
+
+**ReplyApiController**
+```Java
+//댓글삭제
+    @DeleteMapping("/api/v1/board/{boardId}/reply/{replyId}")
+    public void delete(@PathVariable Long replyId) {
+        replyService.replyDelete(replyId);
+    }
+```
+
+**ReplyService**
+```Java
+@Transactional
+    public void replyDelete(Long replyId) {
+        replyRepository.deleteById(replyId);
+    }
+```
+
+</details>  
+
+# 자동로그인
+<details>   
+<summary>접기/펼치기</summary>  
+
+**SecurityCongig**
+```Java
+@Override
+    protected void configure(HttpSecurity http) throws Exception {
+        ...
+
+        http
+                .rememberMe().tokenValiditySeconds(60 * 60 * 7)
+                .userDetailsService(principalDetailService);
+    }
+```
+tokenValiditySeconds : 쿠키를 얼마나 유지할 것인지 계산합니다. (7일 설정)  
+그 다음에 User 정보를 넣어주면 됩니다. principalDetailService  
+
+**login.html**
+```Java
+<main class="form-signin">
+    <div class="container border rounded flex-md-row mb-4 shadow-sm h-md-250">
+        <form action="/auth/user/login" method="post">
+            ...
+            <div class="checkbox mb-3">
+                <input type="checkbox" name="remember-me" id="rememberMe">
+                <label for="rememberMe" aria-describedby="rememberMeHelp">로그인 유지</label>
+            </div>
+            <button class="w-100 btn btn-lg btn-success" id="btn-login">로그인</button>
+        </form>
+
+    </div>
+</main>
+```
+
+</details>  
+
+
+# 예외처리
+<details>   
+<summary>접기/펼치기</summary>  
+
+**CustomAccessDeniedHandler**
+```Java
+public class CustomAccessDeniedHandler implements AccessDeniedHandler {
+	 
+    @Override
+    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException e) throws IOException, ServletException {
+        //스프링 시큐리티 로그인때 만든 객체
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        //현재 접속 url를 확인
+        UrlPathHelper urlPathHelper = new UrlPathHelper();
+        String originalURL = urlPathHelper.getOriginatingRequestUri(request);
+ 
+        //로직을 짜서 상황에 따라 보내줄 주소를 설정해주면 됨
+        response.sendRedirect("/error");
+    }
+}
+```
+
+**error.html**
+```Java
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="layout/header :: header">
+<title>HelloSpringBoot</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+	<div class="container">
+		<div th:replace="layout/bodyHeader2 :: bodyHeader" />
+		<div class="jumbotron">
+			<h1>일반사용자는 접근할 수 없습니다.</h1>
+			<button class="btn btn-secondary" onclick="history.back()">돌아가기</button>
+		</div>
+		<div th:replace="layout/footer :: footer" />
+	</div>
+</body>
+</html>
+```
+
+</details>  
+
+
 
 # 프로젝트 진행과정에서 궁금했던 점
 **[JPA] 요청 응답시 Entity 대신 DTO를 사용해야하는 이유**
 [참고](https://tecoble.techcourse.co.kr/post/2020-08-31-dto-vs-entity/)  
+
+# 후기
