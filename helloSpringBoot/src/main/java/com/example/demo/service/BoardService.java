@@ -7,7 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.domain.board.Board;
 import com.example.demo.domain.dto.board.BoardDeleteRequestDto;
-import com.example.demo.domain.dto.board.BoardRequestDto;
 import com.example.demo.domain.dto.board.BoardSaveRequestDto;
 import com.example.demo.domain.dto.board.BoardUpdateRequestDto;
 import com.example.demo.domain.user.User;
@@ -22,10 +21,15 @@ public class BoardService {
     private final BoardRepository boardRepository;
 
     //글작성 로직
+//    @Transactional
+//    public Long save(BoardSaveRequestDto boardSaveRequestDto, User user) {
+//        boardSaveRequestDto.setUser(user);
+//        return boardRepository.save(boardSaveRequestDto.toEntity()).getId();
+//    }
     @Transactional
-    public Long save(BoardSaveRequestDto boardSaveRequestDto, User user) {
-        boardSaveRequestDto.setUser(user);
-        return boardRepository.save(boardSaveRequestDto.toEntity()).getId();
+    public Long register(BoardSaveRequestDto boardSaveRequestDto, User user) {
+    	boardSaveRequestDto.setUser(user);
+    	return boardRepository.save(boardSaveRequestDto.toEntity()).getId();
     }
     
     //글목록 로직

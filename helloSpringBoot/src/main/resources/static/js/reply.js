@@ -1,4 +1,4 @@
-'use strict';
+'board strict';
 
 let replyIndex = {
     init: function () {

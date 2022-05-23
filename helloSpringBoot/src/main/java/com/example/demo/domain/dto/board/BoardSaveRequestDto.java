@@ -21,7 +21,6 @@ public class BoardSaveRequestDto {
     private String content;
     private int count;
     private User user;
-    private String useYn;
     
     private int attachCount;
     private String fileIdxs;
@@ -33,7 +32,6 @@ public class BoardSaveRequestDto {
                 .content(content)
                 .count(0)
                 .user(user)
-                .useYn(useYn)
                 .build();
     }
 

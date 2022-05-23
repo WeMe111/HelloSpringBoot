@@ -26,19 +26,27 @@
 
 <main class="form-signin" style="max-width: 100%;">
     <div class="container border rounded flex-md-row mb-4 shadow-sm h-md-250">
-        <h1 class="h3 m-3 fw-normal">글상세</h1>
+        <div class="form-floating m-3">
+            <h3 th:text="${board.title}" style="margin-bottom: 20px;"></h3>
+        </div>
         <hr/>
         <div class="form-floating m-3">
-            <h3 th:text="${board.title}" style="margin-bottom: 50px;"></h3>
-        </div>
-        <div class="form-floating m-3">
             <p th:text="${board.content}"></p>
+            <br/>
+            <div th:each="imageFile : ${all} ">
+				<img th:src="|/images/${imageFile.id}|" >
+				<br/>
+				<br/>
+			</div>
         </div>
-
-
+			<h3 class="form-floating m-3">파일 다운로드</h3>
+			<hr/>
+			<div class="form-floating m-3" th:each="file : ${all}">
+				<a th:href="|/attach/${file.id}|" th:text="${file.orgNm}"></a>
+			</div>
     </div>
     <span th:if="${board.user.id == #authentication.principal.id}">
-        <a th:href="@{/board/{id}/update(id=${board.id})}" class="btn btn-warning" id="btn-update">수정</a>
+        <a th:href="@{/board/{id}/update(id=${board.id})}" class="btn btn-warning">수정</a>
     </span>
     <button class="btn btn-secondary" onclick="history.back()">뒤로</button>
 

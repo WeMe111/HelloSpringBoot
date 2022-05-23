@@ -22,10 +22,11 @@ public class BoardApiController {
     private final BoardService boardService;
 
     //글작성 API
-    @PostMapping("/api/v1/board")
-    public Long save(@RequestBody BoardSaveRequestDto boardSaveRequestDto, @AuthenticationPrincipal PrincipalDetail principalDetail) {
-        return boardService.save(boardSaveRequestDto, principalDetail.getUser());
-    }
+//    @PostMapping("/api/v1/board")
+//    public Long save(@RequestBody BoardSaveRequestDto boardSaveRequestDto, 
+//    				 @AuthenticationPrincipal PrincipalDetail principalDetail) {
+//        return boardService.save(boardSaveRequestDto, principalDetail.getUser());
+//    }
     
     //글삭제 API
 //    @DeleteMapping("/api/v1/board/{id}")

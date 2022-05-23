@@ -1,5 +1,6 @@
 package com.example.demo.domain.board;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -14,6 +15,8 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
+
+import org.hibernate.annotations.DynamicInsert;
 
 import com.example.demo.domain.reply.Reply;
 import com.example.demo.domain.user.User;
@@ -31,6 +34,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@DynamicInsert  //@DynamicInsert, @DynamicUpdate는 각각 insert 또는 update 시 null인 field는 제외 한다.
 public class Board extends BaseTimeEntity {
 
     @Id
@@ -55,8 +59,11 @@ public class Board extends BaseTimeEntity {
     @OneToMany(mappedBy = "board", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     private List<Reply> replyList;
     
-    @Column
+    @Column(columnDefinition = "varchar(20) default 'Y'")
     private String useYn;
+    
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    private List<FileEntity> fileEntity = new ArrayList<>();
     
     //글 수정 더티체킹
     public void update(String title, String content) {
