@@ -10,6 +10,7 @@
 [예외처리](#예외처리)  
 [파일 업로드/ 다운로드](#파일-업로드/-다운로드)  
 [프로젝트 진행과정에서 궁금했던 점](#프로젝트-진행과정에서-궁금했던-점)  
+[MariaDB 계정 생성 및 권한부여](MariaDB-계정-생성-및-권한부여)
 [후기](#후기)  
 # 구현
 1. SpringSicurity를 이용한 로그인, 회원가입  
@@ -2305,5 +2306,13 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 # 프로젝트 진행과정에서 궁금했던 점
 **[JPA] 요청 응답시 Entity 대신 DTO를 사용해야하는 이유**
 [참고](https://tecoble.techcourse.co.kr/post/2020-08-31-dto-vs-entity/)  
+
+# MariaDB 계정 생성 및 권한부여
+![image](https://user-images.githubusercontent.com/94879395/169932602-b34596a4-0e7f-45d9-ad58-a7e31c47ac94.png)
+슈퍼계정에 로그인 한다.
+![image](https://user-images.githubusercontent.com/94879395/169932667-b6727686-3ea7-49f1-b236-b08f1e2ac3bd.png)
+![image](https://user-images.githubusercontent.com/94879395/169932692-99507534-83c0-4c31-b241-62c2f50b4b3c.png)
+![image](https://user-images.githubusercontent.com/94879395/169932706-e1e6e7ee-4d81-4abd-8aac-e93b9837d9fc.png)
+
 
 # 후기
