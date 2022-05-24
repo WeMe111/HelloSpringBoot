@@ -9,6 +9,7 @@
 [자동로그인](#자동로그인)  
 [예외처리](#예외처리)  
 [파일 업로드/ 다운로드](#파일-업로드/-다운로드)  
+[Gradle JAR파일 배포](Gradle-JAR파일-배포)  
 [프로젝트 진행과정에서 궁금했던 점](#프로젝트-진행과정에서-궁금했던-점)  
 [MariaDB 계정 생성 및 권한부여](#MariaDB-계정-생성-및-권한부여)  
 [후기](#후기)  
@@ -2301,13 +2302,23 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
 </details>  
 
-# 파일 업로드/ 다운로드
+# 파일 업로드/ 다운로드  
 
-# 프로젝트 진행과정에서 궁금했던 점
+# Gradle JAR파일 배포
+<details>   
+<summary>접기/펼치기</summary>  
+
+bpptjar를 클릭하고 프로젝트 파일 ../build/libs 폴더에 jar파일이 생성 된다.  
+![image](https://user-images.githubusercontent.com/94879395/169948277-ef08b3df-e814-4757-8162-57c5487ff047.png)
+
+</details>  
+
+
+# 프로젝트 진행과정에서 궁금했던 점  
 **[JPA] 요청 응답시 Entity 대신 DTO를 사용해야하는 이유**
 [참고](https://tecoble.techcourse.co.kr/post/2020-08-31-dto-vs-entity/)  
 
-# MariaDB 계정 생성 및 권한부여
+# MariaDB 계정 생성 및 권한부여  
 <details>   
 <summary>접기/펼치기</summary>  
 
