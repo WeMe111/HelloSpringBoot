@@ -44,7 +44,7 @@
 			      <a class="page-link" th:href="@{/auth/board/list/(page=${boards.pageable.pageNumber - 1}, search=${param.search})}">Previous</a>
 			    </li>
 			    <li class="page-item"  th:classappend="${i == boards.pageable.pageNumber + 1} ? 'active' : '' " th:each="i : ${#numbers.sequence(startPage, endPage)}">
-			      <a class="page-link" th:href="@{/auth/board/list/(page=${i - 1}, search=${param.search})}" th:text="${i}">1</a>
+			      <a class="page-link" th:href="@{/auth/board/list/(page=${i - 1}, search=${param.search})}" th:text="${i}"></a>
 			    </li>
 			    <li class="page-item" th:classappend="${boards.totalPages == boards.pageable.pageNumber + 1} ? 'disabled' : '' ">
 			      <a class="page-link" th:href="@{/auth/board/list/(page=${boards.pageable.pageNumber + 1}, search=${param.search})}">Next</a>

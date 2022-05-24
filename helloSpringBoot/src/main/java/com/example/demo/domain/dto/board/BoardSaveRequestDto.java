@@ -1,6 +1,9 @@
 package com.example.demo.domain.dto.board;
 
+import java.util.List;
+
 import com.example.demo.domain.board.Board;
+import com.example.demo.domain.board.FileEntity;
 import com.example.demo.domain.user.User;
 
 import lombok.AllArgsConstructor;
@@ -22,9 +25,7 @@ public class BoardSaveRequestDto {
     private int count;
     private User user;
     
-    private int attachCount;
-    private String fileIdxs;
-    private String deleteFileIdxs;
+    private Board board;
 
     public Board toEntity() {
         return Board.builder()
@@ -37,5 +38,6 @@ public class BoardSaveRequestDto {
 
     public void setUser(User user) {
         this.user = user;
-    }
+    }    
+  
 }

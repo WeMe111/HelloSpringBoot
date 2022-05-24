@@ -62,10 +62,10 @@ public class Board extends BaseTimeEntity {
     @Column(columnDefinition = "varchar(20) default 'Y'")
     private String useYn;
     
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "board", cascade = CascadeType.PERSIST)
     private List<FileEntity> fileEntity = new ArrayList<>();
     
-    //글 수정 더티체킹
+    //글 수정
     public void update(String title, String content) {
         this.title = title;
         this.content = content;

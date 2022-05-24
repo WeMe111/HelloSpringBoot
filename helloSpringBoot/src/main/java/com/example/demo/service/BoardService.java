@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.domain.board.Board;
+import com.example.demo.domain.board.FileEntity;
 import com.example.demo.domain.dto.board.BoardDeleteRequestDto;
 import com.example.demo.domain.dto.board.BoardSaveRequestDto;
 import com.example.demo.domain.dto.board.BoardUpdateRequestDto;

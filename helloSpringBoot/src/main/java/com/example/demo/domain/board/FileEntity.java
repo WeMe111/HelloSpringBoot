@@ -11,16 +11,19 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "file")
 @Entity
 @Getter
 @Setter
+@Builder
 public class FileEntity extends BaseTimeEntity{
 
 	@Id
@@ -35,16 +38,12 @@ public class FileEntity extends BaseTimeEntity{
     private String savedPath;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "boardId")
+    @JoinColumn(name = "id")
     private Board board;
 
-    @Builder
-    public FileEntity(Long id, String orgNm, String savedNm, String savedPath, Board board) {
-        this.id = id;
-        this.orgNm = orgNm;
-        this.savedNm = savedNm;
-        this.savedPath = savedPath;
+    // Board 정보 저장
+    public void save(Board board) {
+    	this.board = board;
     }
-
     
 }

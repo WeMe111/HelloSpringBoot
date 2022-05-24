@@ -7,7 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.demo.domain.user.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-
-	Optional<User> findByUsername(String username);
 	
+	// findBy 규칙 -> UserId 문법
+	// ex) select * from user where userId = ?
+	Optional<User> findByUsername(String username);
 }
