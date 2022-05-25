@@ -2318,6 +2318,12 @@ bpptjar를 클릭하고 프로젝트 파일 ../build/libs 폴더에 jar파일이
 **[JPA] 요청 응답시 Entity 대신 DTO를 사용해야하는 이유**
 [참고](https://tecoble.techcourse.co.kr/post/2020-08-31-dto-vs-entity/)  
 
+**web과 was의 차이**  
+[참고](https://helloworld-88.tistory.com/71)  
+
+**API와 API 문서 보는 법**  
+[참고](https://opentutorials.org/course/1223/6222)  
+
 # MariaDB 계정 생성 및 권한부여  
 <details>   
 <summary>접기/펼치기</summary>  
