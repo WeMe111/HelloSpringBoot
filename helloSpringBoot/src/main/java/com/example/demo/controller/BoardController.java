@@ -34,6 +34,7 @@ import com.example.demo.domain.dto.board.BoardSaveRequestDto;
 import com.example.demo.repository.FileRepository;
 import com.example.demo.security.PrincipalDetail;
 import com.example.demo.service.BoardService;
+import com.example.demo.service.FileService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -43,7 +44,7 @@ public class BoardController {
 
 	private final BoardService boardService;
 	private final FileRepository fileRepository;
-	
+	private final FileService fileService;
 	
 	// 게시판 페이지 이동
 //	@GetMapping("/auth/board/list")
@@ -84,9 +85,14 @@ public class BoardController {
 	public String registerPost(BoardSaveRequestDto boardSaveRequestDto,
 							   @AuthenticationPrincipal PrincipalDetail principalDetail,
 							   @RequestParam("file") MultipartFile file,
-							   @RequestParam("files") List<MultipartFile> files,
-							   FileEntity fileEntity) throws IOException {
+							   @RequestParam("files") List<MultipartFile> files) throws IOException {
 		
+		fileService.saveFile(file);
+
+        for (MultipartFile multipartFile : files) {
+            fileService.saveFile(multipartFile);
+        }
+        
 		boardService.register(boardSaveRequestDto, principalDetail.getUser());
        
 		return "redirect:/auth/board/list";

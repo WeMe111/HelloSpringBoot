@@ -38,12 +38,8 @@ public class FileEntity extends BaseTimeEntity{
     private String savedPath;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "boardId")
     private Board board;
 
-    // Board 정보 저장
-    public void save(Board board) {
-    	this.board = board;
-    }
     
 }

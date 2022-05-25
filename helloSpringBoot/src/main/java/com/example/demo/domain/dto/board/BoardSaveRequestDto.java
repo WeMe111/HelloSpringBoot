@@ -25,14 +25,16 @@ public class BoardSaveRequestDto {
     private int count;
     private User user;
     
-    private Board board;
+    private List<FileEntity> fileEntity;
 
     public Board toEntity() {
         return Board.builder()
+        		.id(id)
                 .title(title)
                 .content(content)
                 .count(0)
                 .user(user)
+                .fileEntity(fileEntity)
                 .build();
     }
 

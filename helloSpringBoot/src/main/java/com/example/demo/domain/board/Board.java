@@ -76,4 +76,14 @@ public class Board extends BaseTimeEntity {
     	this.useYn = useYn;
     }
     
+ // Board에서 파일 처리 위함
+    public void addFile(FileEntity fileEntity) {
+        this.fileEntity.add(fileEntity);
+
+	// 게시글에 파일이 저장되어있지 않은 경우
+        if(fileEntity.getBoard() != this)
+            // 파일 저장
+        	fileEntity.setBoard(this);
+    }
+    
 }
