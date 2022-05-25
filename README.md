@@ -2334,6 +2334,7 @@ bpptjar를 클릭하고 프로젝트 파일 ../build/libs 폴더에 jar파일이
 '%'는 모든 권한을 허용합니다.
 ![image](https://user-images.githubusercontent.com/94879395/169932692-99507534-83c0-4c31-b241-62c2f50b4b3c.png)  
 ![image](https://user-images.githubusercontent.com/94879395/169932706-e1e6e7ee-4d81-4abd-8aac-e93b9837d9fc.png)  
+(10060) 오류나면 방화벽 확인 하세요.  
 [참고](https://kithub.tistory.com/12)  
 
 </details>  
