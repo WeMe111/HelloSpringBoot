@@ -23,12 +23,34 @@
 	            <input type="file" multiple="multiple" name="files">
 				<br/>
 				<br/>
-		   	    <input class="w-100 btn btn-lg btn-primary" type="submit" value="작성완료" style="max-width: 250px; margin-left: 220px;"/>
+		   	    <input class="w-100 btn btn-lg btn-primary" onclick="insert();" type="submit" value="작성완료" style="max-width: 250px; margin-left: 220px;"/>
 		    </form>
 		    <!--  <button type="submit" class="w-100 btn btn-lg btn-primary" id="btn-save" style="max-width: 250px; margin-left: 220px;">작성완료</button>-->
         	<br>
 		<div th:replace="layout/footer :: footer" />
 	</div>
 	<script th:src="@{/js/board.js}"></script>
+	<script>
+    /**
+     * 중복서브밋 방지
+     * 
+     * @returns {Boolean}
+     */
+    var doubleSubmitFlag = false;
+    function doubleSubmitCheck(){
+        if(doubleSubmitFlag){
+            return doubleSubmitFlag;
+        }else{
+            doubleSubmitFlag = true;
+            return false;
+        }
+    }
+ 
+    function insert(){
+        if(doubleSubmitCheck()) return;
+ 
+        alert("등록");
+    }
+    </script>
 </body>
 </html>
