@@ -2324,9 +2324,10 @@ bpptjar를 클릭하고 프로젝트 파일 ../build/libs 폴더에 jar파일이
 
 ![image](https://user-images.githubusercontent.com/94879395/169932602-b34596a4-0e7f-45d9-ad58-a7e31c47ac94.png)  
 슈퍼계정에 로그인 한다.
-![image](https://user-images.githubusercontent.com/94879395/169932667-b6727686-3ea7-49f1-b236-b08f1e2ac3bd.png)
-![image](https://user-images.githubusercontent.com/94879395/169932692-99507534-83c0-4c31-b241-62c2f50b4b3c.png)
-![image](https://user-images.githubusercontent.com/94879395/169932706-e1e6e7ee-4d81-4abd-8aac-e93b9837d9fc.png)
+![image](https://user-images.githubusercontent.com/94879395/169932667-b6727686-3ea7-49f1-b236-b08f1e2ac3bd.png)  
+'%'는 모든 권한을 허용합니다.
+![image](https://user-images.githubusercontent.com/94879395/169932692-99507534-83c0-4c31-b241-62c2f50b4b3c.png)  
+![image](https://user-images.githubusercontent.com/94879395/169932706-e1e6e7ee-4d81-4abd-8aac-e93b9837d9fc.png)  
 [참고](https://kithub.tistory.com/12)  
 
 </details>  
