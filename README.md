@@ -2324,6 +2324,18 @@ bpptjar를 클릭하고 프로젝트 파일 ../build/libs 폴더에 jar파일이
 **API와 API 문서 보는 법**  
 [참고](https://opentutorials.org/course/1223/6222)  
 
+**DHCP란?**  
+[참고](https://ja-gamma.tistory.com/entry/DHCP%EA%B0%9C%EB%85%90%EB%8F%99%EC%9E%91%EC%9B%90%EB%A6%AC)  
+
+**MacAddress란?**  
+[참고](https://jhnyang.tistory.com/404)  
+
+**Statement와 Prepared Statement 차이점**   
+[참고](https://velog.io/@ragnarok_code/DataBase-Statement%EC%99%80-Prepared-Statement-%EC%B0%A8%EC%9D%B4%EC%A0%90)  
+
+**@ModelAttribute @RequestParam @RequestBody 차이**  
+[참고](https://parkadd.tistory.com/70)  
+
 # MariaDB 계정 생성 및 권한부여  
 <details>   
 <summary>접기/펼치기</summary>  
@@ -2337,6 +2349,8 @@ bpptjar를 클릭하고 프로젝트 파일 ../build/libs 폴더에 jar파일이
 (10060) 오류나면 방화벽 확인 하세요.  
 [참고](https://kithub.tistory.com/12)  
 
-</details>  
+</details> 
+
+
 
 # 후기
